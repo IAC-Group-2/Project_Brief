@@ -46,6 +46,29 @@ TEST_F(CpuTestbench, TestPdf)
     EXPECT_EQ(top_->a0, 15363);
 }
 
+TEST_F(CpuTestbench, BaseProgramTest)
+{
+    bool success = false;
+    setupTest("6_program");
+    system("./assemble.sh asm/6_program.s");
+    initSimulation();
+    for (int i = 0; i < CYCLES; i++)
+    {
+        runSimulation(1);
+        if (top_->a0 == 254)
+        {
+            SUCCEED();
+            success = true;
+            break;
+        }
+    }
+    if (!success)
+    {
+        FAIL() << "Counter did not reach 254";
+    }
+}
+
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
