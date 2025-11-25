@@ -3,7 +3,7 @@ module pc_reg #(
 )(
     input logic                     clk_i,
     input logic                     rst_i,
-    input logic  [DATA_WIDTH-1:0]                      pcNext_i,
+    input logic  [DATA_WIDTH-1:0]   pcNext_i,
     output logic [DATA_WIDTH-1:0]   pc_o
 );
 
