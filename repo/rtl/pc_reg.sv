@@ -1,19 +1,16 @@
 module pc_reg #(
     parameter DATA_WIDTH = 32
 )(
-    input logic                     clk,
-    input logic                     rst,
-    input logic                     next_pc,
-    input logic [DATA_WIDTH-1:0]    ImmOp,
-
-    output logic [DATA_WIDTH-1:0]   PC_o
-
+    input logic                     clk_i,
+    input logic                     rst_i,
+    input logic                     pcNext_i,
+    output logic [DATA_WIDTH-1:0]   pc_o
 );
 
-always_ff @(posedge clk, posedge rst) 
-    if (rst) 
-        PC_out <= '0;
+always_ff @(posedge clk_i, posedge rst_i) 
+    if (rst_i) 
+        pc_o <= '0;
     else 
-        PC_out <= next_pc;
+        pc_o <= pcNext_i;
 
 endmodule
