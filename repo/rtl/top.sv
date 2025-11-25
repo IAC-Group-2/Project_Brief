@@ -1,5 +1,5 @@
 module top #(
-    ADDRESS_WIDTH = 5,
+    REGISTER_ADDRESS_WIDTH = 5,
     DATA_WIDTH = 32,
     INSTRUCTION_WIDTH = 32,
     PC_WIDTH = 32
@@ -84,9 +84,9 @@ module top #(
     assign funct3 = Instr[14:12];
     assign funct7 = Instr[30];
 
-    logic [4:0] rs1;
-    logic [4:0] rs2;
-    logic [4:0] rs3;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] rs1;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] rs2;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] rs3;
     
     assign rs1 = Instr[19:15];
     assign rs2 = Instr[24:20];
