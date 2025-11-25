@@ -1,6 +1,6 @@
-module Data_Memory #(
-    parameter ADDRESS_WIDTH = 8,
-              DATA_WIDTH = 8
+module data_memory #(
+    parameter ADDRESS_WIDTH = 32,
+              DATA_WIDTH = 32
 )(
     //diagram specifies wr_en_i only so will always be reading/ writing. No re_en_i.
     //also specifies one address in
