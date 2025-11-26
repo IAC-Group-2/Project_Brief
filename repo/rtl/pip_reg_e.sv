@@ -36,11 +36,11 @@ module pip_reg_e #( //Decode to execute stage
     input   logic [PC_WIDTH-1:0]            PCD_i, //Decode
     output  logic [PC_WIDTH-1:0]            PCE_o, //Execute
     
-    input   logic [INSTRUCTION_WIDTH-1:0]   Rs1D_i, //Decode
-    output  logic [INSTRUCTION_WIDTH-1:0]   Rs1E_o, //Execute
+    input   logic [REGISTER_ADDRESS_WIDTH-1:0]   Rs1D_i, //Decode
+    output  logic [REGISTER_ADDRESS_WIDTH-1:0]   Rs1E_o, //Execute
     
-    input   logic [INSTRUCTION_WIDTH-1:0]   Rs2D_i, //Decode
-    output  logic [INSTRUCTION_WIDTH-1:0]   Rs2E_o, //Execute
+    input   logic [REGISTER_ADDRESS_WIDTH-1:0]   Rs2D_i, //Decode
+    output  logic [REGISTER_ADDRESS_WIDTH-1:0]   Rs2E_o, //Execute
 
     input   logic [REGISTER_ADDRESS_WIDTH-1:0]  RdD_i, //Decode
     output  logic [REGISTER_ADDRESS_WIDTH-1:0]  RdE_o, //Execute
