@@ -62,6 +62,8 @@ module top #(
 
     //Extend Output
     logic[DATA_WIDTH-1:0]           ImmExtD;
+    logic[DATA_WIDTH-1:0]           ImmExtE;
+
 
     //MUX 1
     logic[DATA_WIDTH-1:0]           SrcB;
@@ -91,7 +93,8 @@ module top #(
 
     assign en = 1;
 
-    assign PCNext = PCSrc ? PCTarget : PCPlus4;
+    assign PCNext = PCSrc ? PCTarget : PCPlus4F; 
+    // NOTE: after control block changes pcsrc, make pcsrc = the or stuff in diag
  
     PC_reg PC_reg (
         .clk_i(clk),
@@ -128,11 +131,6 @@ module top #(
     assign funct3 = InstrD[14:12];
     assign funct7 = InstrD[30];
 
-    logic [4:0] rs1;
-    logic [4:0] rs2;
-    logic [4:0] rs3;
-    logic [4:0] rs3W;
-    logic [4:0] rs3M;
 
     logic [4:0] Rs1D;
     logic [4:0] Rs1E;
@@ -142,7 +140,6 @@ module top #(
     logic [4:0] RdE;
     logic [4:0] RdM;
     logic [4:0] RdW;
-
 
 
     assign Rs1D = InstrD[19:15];
@@ -177,10 +174,10 @@ module top #(
         .A2_i(Rs2D),
         .A3_i(RdW),
         .WD3_i(Result),
-        .WE3_i(RegWrite),
+        .WE3_i(RegWrite), // THIS NEEDS TO CHANGE TO A MUX OUTPUT OF W STAGE
         .RD1_o(RD1D),
         .RD2_o(RD2D),
-        .A0_o(a0) // remove?
+        .A0_o(a0) // REMOVE?
     );
 
      pip_reg_e pip_reg_e(
@@ -208,30 +205,43 @@ module top #(
         .RdD_i(RdD),
         .RdE_o(RdE),
         .ImmExtD_i(ImmExtD),
-        .ImmExtE_o(),
-        .PCPlus4D_i(),
-        .PCPlus4E_o(),
+        .ImmExtE_o(ImmExtE),
+        .PCPlus4D_i(PCPlus4D),
+        .PCPlus4E_o(PCPlus4E)
     );
 
 
 
-    assign SrcB = ALUSrc ? ImmExt : WriteData;
+    assign SrcB = ALUSrc ? ImmExt : WriteData; //NEEDS CHANGE
 
     ALU ALU (
-        .SrcA_i(SrcA),
+        .SrcA_i(SrcA), // DOESNT EXIST
         .SrcB_i(SrcB),
         .ALUControl_i(ALUControl),
-        .ALUResult_o(ALUResult),
+        .ALUResult_o(ALUResultE),
         .Zero_o(Zero)
-        );    
+    );    
 
     pip_reg_m pip_reg_m(
-
+        .RegWriteE_i(RegWriteE),
+        .RegWriteM_o(RegWriteM),
+        .ResultSrcE_i(ResultSrcE),
+        .ResultSrcM_o(ResultSrcM),
+        .MemWriteE_i(MemWriteE),
+        .MemWriteM_o(MemWriteM),
+        .ALUResultE_i(ALUResultE),
+        .ALUResultM_o(ALUResultM),
+        .WriteDataE_i(WriteDataE), // DOESNT EXIST 
+        .WriteDataM_o(WriteDataM), // ALSO DOESNT EXIST
+        .RdE_i(RdE),
+        .RdM_o(RdM),
+        .PCPlus4E_i(PCPlus4E),
+        .PCPlus4M_o(PCPlus4M)
     );
 
     data_memory data_memory(
         .clk_i(clk),
-        .wr_en_i(MemWrite),
+        .wr_en_i(MemWriteM),
         .addr_i(ALUResultM),
         .data_i(WriteData),
         .data_o(ReadDataM)
