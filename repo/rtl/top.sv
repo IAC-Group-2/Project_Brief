@@ -88,11 +88,15 @@ module top #(
     //Mux 2
     logic[DATA_WIDTH-1:0]           ResultW;
 
+    //Hazard Unit
+    logic[2:0]                      FowardAE;
+    logic[2:0]                      FowardBE;
+
+
     //Control block inputs 
     logic [6:0]                     op;
     logic [2:0]                     funct3;
     logic                           funct7;
-    
     logic                           en;
 
     assign en = 1;
