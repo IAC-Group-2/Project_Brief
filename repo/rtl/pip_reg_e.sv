@@ -36,6 +36,12 @@ module pip_reg_e #( //Decode to execute stage
     input   logic [PC_WIDTH-1:0]            PCD_i, //Decode
     output  logic [PC_WIDTH-1:0]            PCE_o, //Execute
     
+    input   logic [INSTRUCTION_WIDTH-1:0]   Rs1D_i, //Decode
+    output  logic [INSTRUCTION_WIDTH-1:0]   Rs1E_o, //Execute
+    
+    input   logic [INSTRUCTION_WIDTH-1:0]   Rs2D_i, //Decode
+    output  logic [INSTRUCTION_WIDTH-1:0]   Rs2E_o, //Execute
+
     input   logic [REGISTER_ADDRESS_WIDTH-1:0]  RdD_i, //Decode
     output  logic [REGISTER_ADDRESS_WIDTH-1:0]  RdE_o, //Execute
     
@@ -59,6 +65,8 @@ always_ff @(posedge clk_i) begin
         RD1E_o          <= RD1D_i;
         RD2E_o          <= RD2D_i;
         PCE_o           <= PCD_i;
+        Rs1E_o          <= Rs1D_i;
+        Rs2E_o          <= Rs2D_i;
         RdE_o           <= RdD_i;
         ImmExtE_o       <= ImmExtD_i;
         PCPlus4E_o      <= PCPlus4D_i;
@@ -74,6 +82,8 @@ always_ff @(posedge clk_i) begin
         RD1E_o          <= 'b0;
         RD2E_o          <= 'b0;
         PCE_o           <= 'b0;
+        Rs1E_o          <= 'b0;
+        Rs2E_o          <= 'b0;
         RdE_o           <= 'b0;
         ImmExtE_o       <= 'b0;
         PCPlus4E_o      <= 'b0;
