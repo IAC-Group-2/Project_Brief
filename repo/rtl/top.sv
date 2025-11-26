@@ -99,7 +99,7 @@ module top #(
     logic                           en;
 
     assign en = 1;
-    assign PCSrcE = JumpE;
+    assign PCSrcE = JumpE || (BranchE && ZeroE);
     assign PCNext = PCSrcE ? PCTargetE : PCPlus4F; 
     // NOTE: after control block changes PCSrcE, make PCSrcE = the or stuff in diag
  
@@ -192,7 +192,7 @@ module top #(
 
     logic clr;
     assign clr = 'b0;
-    assign BranchD = 'b0;  // No branching for now
+    assign BranchD = 'b0;  // No branching for now UPDATE WHEN CONTROL UNIT GETS THIS CAPABILITY
 
     pip_reg_e pip_reg_e(
         .clk_i(clk),
@@ -243,7 +243,6 @@ module top #(
         .Zero_o(ZeroE)
     );    
 
-    assign PCSrcE = JumpE || (BranchE && ZeroE)
 
     pip_reg_m pip_reg_m(
         .clk_i(clk),
