@@ -167,6 +167,7 @@ module top #(
         .ImmSrc_o(ImmSrcD),
         .ResultSrc_o(ResultSrcD),
         .PCSrc_o(JumpD) // CHANGE CU TO OUTPUT JUMP, BRANCH STUFF INSTEAD 
+        // SHOULD ALSO HAVE A BRANCHD OUTPUT HERE
     );
 
     //variable changing is needed
