@@ -13,19 +13,16 @@ module control_unit(
 );
 
 logic branch;
-logic jump;
 logic [1:0] ALUOp;
 
 // Main Decoder
 always_comb begin
-    // Default values
     RegWrite_o = 0;
     MemWrite_o = 0;
     ALUSrc_o = 0;
     ResultSrc_o = 0;
     ImmSrc_o = 3'b000;
     branch = 0;
-    jump = 0;
     ALUOp = 2'b00;
 
     case (op_i) 
@@ -37,7 +34,6 @@ always_comb begin
             ResultSrc_o = 0;
             branch = 0;
             ALUOp = 2'b10;
-            jump = 0;
         end
 
         // I-Type (Arithmetic)
@@ -48,7 +44,6 @@ always_comb begin
             ImmSrc_o = 3'b000;
             branch = 0;
             ALUOp = 2'b10;
-            jump = 0;
         end
 
         // I-Type (Load)
@@ -59,9 +54,7 @@ always_comb begin
             ImmSrc_o = 3'b000; 
             branch = 0;
             ALUOp = 2'b00;
-            jump = 0;
         end
-
          // B-Type
         7'b1100011: begin 
             RegWrite_o = 0;
@@ -70,43 +63,6 @@ always_comb begin
             ImmSrc_o = 3'b001; 
             branch = 1;
             ALUOp = 2'b01;
-            jump = 0;
-        end
-
-        // S-Type (Store)
-        7'b0100011: begin
-            RegWrite_o = 0;
-            MemWrite_o = 1;
-            ALUSrc_o = 1;
-            ImmSrc_o = 3'b010; 
-            ResultSrc_o = 0;
-            branch = 0;
-            ALUOp = 2'b00;
-            jump = 0;
-        end
-
-        // J-Type (JAL)
-        7'b1101111: begin
-            RegWrite_o = 1;
-            MemWrite_o = 0;
-            ALUSrc_o = 0;
-            ResultSrc_o = 0;
-            ImmSrc_o = 3'b100;
-            branch = 0;
-            ALUOp = 2'b00;
-            jump = 1;
-        end
-
-        // I-Type (JALR)
-        7'b1100111: begin
-            RegWrite_o = 1;
-            MemWrite_o = 0;
-            ALUSrc_o = 1;
-            ResultSrc_o = 0;
-            ImmSrc_o = 3'b000;
-            branch = 0;
-            ALUOp = 2'b00;
-            jump = 1;
         end
         
         default: begin
@@ -117,10 +73,9 @@ always_comb begin
             ImmSrc_o = 3'b000;
             branch = 0;
             ALUOp = 2'b00;
-            jump = 0;
         end
     endcase
-    PCSrc_o = (branch & Zero_i) | jump;
+    PCSrc_o = branch & ~Zero_i;
 end
 
 // ALU decoder
@@ -146,5 +101,16 @@ always_comb begin
         default: ALUControl_o = 3'b000;
     endcase
 end
+
+always_comb begin
+        if (branch) begin
+            if (funct3_i[0] == 1'b1) 
+                PCSrc_o = ~Zero_i; // BNE (Branch if Not Zero)
+            else                     
+                PCSrc_o = Zero_i;  // BEQ (Branch if Zero)
+        end else begin
+            PCSrc_o = 0;
+        end
+    end
 
 endmodule
