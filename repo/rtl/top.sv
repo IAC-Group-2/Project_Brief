@@ -24,7 +24,7 @@ module top #(
     //PC adder
     logic [PC_WIDTH-1:0]            PCPlus4F; //Fetch
     logic [PC_WIDTH-1:0]            PCPlus4D; //Decode
-
+    logic [PC_WIDTH-1:0]            PCPlus4E; //Decode
     logic [PC_WIDTH-1:0]            PCPlus4M; //Memory
     logic [PC_WIDTH-1:0]            PCPlus4W; //Writeback
 
