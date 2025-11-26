@@ -76,7 +76,7 @@ module top #(
     logic[DATA_WIDTH-1:0]           ALUResultE; //Execute
     logic[DATA_WIDTH-1:0]           ALUResultM; //Memory
     logic[DATA_WIDTH-1:0]           ALUResultW; //Writeback
-    logic                           Zero;
+    logic                           ZeroE;
 
     //Adder
     logic [PC_WIDTH-1:0]            PCTargetE;
@@ -157,7 +157,7 @@ module top #(
 
     control_unit control_unit(
         .op_i(op),
-        .Zero_i(Zero),
+        .Zero_i(ZeroE),
         .funct3_i(funct3),
         .funct7_i(funct7),
         .RegWrite_o(RegWriteD),
@@ -240,8 +240,10 @@ module top #(
         .SrcB_i(SrcBE),
         .ALUControl_i(ALUControlE),
         .ALUResult_o(ALUResultE),
-        .Zero_o(Zero)
+        .Zero_o(ZeroE)
     );    
+
+    assign PCSrcE = JumpE || (BranchE && ZeroE)
 
     pip_reg_m pip_reg_m(
         .clk_i(clk),
