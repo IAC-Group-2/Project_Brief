@@ -25,11 +25,11 @@ module pip_reg_w #(
 );
 
 always_ff @(posedge clk_i) begin
-    RegWriteW  <= RegWriteM;
-    ResultSrcW <= ResultSrcM;
-    ALUResultW <= ALUResultM;
-    ReadDataW  <= ReadDataM;
-    RdW        <= RdM;
-    pcPlus4W   <= pcPlus4M;
+    RegWriteW_o  <= RegWriteM_i;
+    ResultSrcW_o <= ResultSrcM_i;
+    ALUResultW_o <= ALUResultM_i;
+    ReadDataW_o  <= ReadDataM_i;
+    RdW_o        <= RdM_i;
+    pcPlus4W_o   <= pcPlus4M_i;
 end
 endmodule
