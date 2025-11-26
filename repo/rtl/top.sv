@@ -65,8 +65,11 @@ module top #(
     logic[DATA_WIDTH-1:0]           ImmExtE;
 
 
-    //MUX 1
-    logic[DATA_WIDTH-1:0]           SrcB;
+    //ALU Input Wires
+    logic[DATA_WIDTH-1:0]           WriteDataE;
+    logic[DATA_WIDTH-1:0]           WriteDataM;
+    logic[DATA_WIDTH-1:0]           SrcAE;
+    logic[DATA_WIDTH-1:0]           SrcBE;
    
     //ALU Output
     logic[DATA_WIDTH-1:0]           ALUResultE; //Execute
@@ -174,10 +177,10 @@ module top #(
         .A2_i(Rs2D),
         .A3_i(RdW),
         .WD3_i(Result),
-        .WE3_i(RegWrite), // THIS NEEDS TO CHANGE TO A MUX OUTPUT OF W STAGE
+        .WE3_i(RegWriteW), // THIS NEEDS TO CHANGE TO A MUX OUTPUT OF W STAGE
         .RD1_o(RD1D),
         .RD2_o(RD2D),
-        .A0_o(a0) // REMOVE?
+        .A0_o(a0) 
     );
 
      pip_reg_e pip_reg_e(
@@ -210,13 +213,14 @@ module top #(
         .PCPlus4E_o(PCPlus4E)
     );
 
-
-
-    assign SrcB = ALUSrc ? ImmExt : WriteData; //NEEDS CHANGE
+    
+    assign SrcAE = RD1E; // change later for hazard unit
+    assign WriteDataE = RD2E; // change later for hazard unit
+    assign SrcBE = ALUSrcE ? ImmExt : WriteDataE; 
 
     ALU ALU (
-        .SrcA_i(SrcA), // DOESNT EXIST
-        .SrcB_i(SrcB),
+        .SrcA_i(SrcAE),
+        .SrcB_i(SrcBE),
         .ALUControl_i(ALUControl),
         .ALUResult_o(ALUResultE),
         .Zero_o(Zero)
@@ -231,8 +235,8 @@ module top #(
         .MemWriteM_o(MemWriteM),
         .ALUResultE_i(ALUResultE),
         .ALUResultM_o(ALUResultM),
-        .WriteDataE_i(WriteDataE), // DOESNT EXIST 
-        .WriteDataM_o(WriteDataM), // ALSO DOESNT EXIST
+        .WriteDataE_i(WriteDataE), 
+        .WriteDataM_o(WriteDataM), 
         .RdE_i(RdE),
         .RdM_o(RdM),
         .PCPlus4E_i(PCPlus4E),
@@ -243,7 +247,7 @@ module top #(
         .clk_i(clk),
         .wr_en_i(MemWriteM),
         .addr_i(ALUResultM),
-        .data_i(WriteData),
+        .data_i(WriteDataM),
         .data_o(ReadDataM)
     );
 
