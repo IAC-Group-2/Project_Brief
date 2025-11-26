@@ -92,7 +92,6 @@ module top #(
     logic[2:0]                      FowardAE;
     logic[2:0]                      FowardBE;
 
-
     //Control block inputs 
     logic [6:0]                     op;
     logic [2:0]                     funct3;
@@ -126,15 +125,15 @@ module top #(
     );
 
     pip_reg_d pip_reg_d (
-    .clk_i(clk),
-    .en_i(en),
-    .PCF_i(PCF),
-    .InstrF_i(InstrF),
-    .PCPlus4F_i(PCPlus4F),
-    .PCD_o(PCD),
-    .InstrD_o(InstrD),
-    .PCPlus4D_o(PCPlus4D)
-);
+        .clk_i(clk),
+        .en_i(en),
+        .PCF_i(PCF),
+        .InstrF_i(InstrF),
+        .PCPlus4F_i(PCPlus4F),
+        .PCD_o(PCD),
+        .InstrD_o(InstrD),
+        .PCPlus4D_o(PCPlus4D)
+    );
 
     assign op = InstrD[6:0];
     assign funct3 = InstrD[14:12];
@@ -229,8 +228,9 @@ module top #(
         .PCPlus4E_o(PCPlus4E)
     );
 
-    
-    assign SrcAE = RD1E; // change later for hazard unit
+    //3way mux so assumes ForwardAE != 11
+    assign SrcAE = FowardAE[1] ? (FowardAE[0] ? 'b0 : ALUResultM) : (ForwardAE[0] ? ResultW : RD1E); 
+    //3way mux so assumes ForwardBE != 11
     assign WriteDataE = RD2E; // change later for hazard unit
     assign SrcBE = ALUSrcE ? ImmExtE : WriteDataE; 
 
