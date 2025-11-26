@@ -1,5 +1,5 @@
 module top #(
-    ADDRESS_WIDTH = 5,
+    REGISTER_ADDRESS_WIDTH = 5,
     DATA_WIDTH = 32,
     INSTRUCTION_WIDTH = 32,
     PC_WIDTH = 32
