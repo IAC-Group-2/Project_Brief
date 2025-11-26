@@ -14,19 +14,19 @@ module top #(
     logic [PC_WIDTH-1:0]            pcNext;
     
     //shift register
-    logic [PC_WIDTH-1:0]            pcF; //Fetch
-    logic [PC_WIDTH-1:0]            pcD; //Decode
+    logic [PC_WIDTH-1:0]            PCF; //Fetch
+    logic [PC_WIDTH-1:0]            PCD; //Decode
     
     //Instruction Memory Outputs
     logic[INSTRUCTION_WIDTH-1:0]    InstrF; //Fetch
-    logic[INSTRUCTION_WIDTH-1:0]     InstrD; //Decode
+    logic[INSTRUCTION_WIDTH-1:0]    InstrD; //Decode
 
     //PC adder
-    logic [PC_WIDTH-1:0]            pcPlus4F; //Fetch
-    logic [PC_WIDTH-1:0]            pcPlus4D; //Decode
+    logic [PC_WIDTH-1:0]            PCPlus4F; //Fetch
+    logic [PC_WIDTH-1:0]            PCPlus4D; //Decode
 
-    logic [PC_WIDTH-1:0]            pcPlus4M; //Memory
-    logic [PC_WIDTH-1:0]            pcPlus4W; //Writeback
+    logic [PC_WIDTH-1:0]            PCPlus4M; //Memory
+    logic [PC_WIDTH-1:0]            PCPlus4W; //Writeback
 
 
     //Control block outputs
@@ -42,6 +42,10 @@ module top #(
     logic                           MemWriteD;
     logic                           MemWriteE;
     logic                           MemWriteM;
+    logic                           JumpD;
+    logic                           JumpE;
+    logic                           BranchD;
+    logic                           BranchE;
     logic [2:0]                     ALUControlD;
     logic [2:0]                     ALUControlE;
     logic                           ALUSrcD;
@@ -51,7 +55,10 @@ module top #(
 
     //Register File Outputs
     logic[DATA_WIDTH-1:0]           RD1D;
+    logic[DATA_WIDTH-1:0]           RD1E;
     logic[DATA_WIDTH-1:0]           RD2D;
+    logic[DATA_WIDTH-1:0]           RD2E;
+
 
     //Extend Output
     logic[DATA_WIDTH-1:0]           ImmExtD;
@@ -100,21 +107,21 @@ module top #(
     );
 
     addr addr(
-        .PC_i(pcF),
+        .PC_i(PCF),
         .ImmOp_i(ImmExt),
         .pcTarget_o(pcTarget),
-        .pcPlus4_o(pcPlus4F)
+        .pcPlus4_o(PCPlus4F)
     );
 
     pip_reg_d pip_reg_d (
     .clk_i(clk),
     .en_i(en),
-    .pcF_i(pcF),
+    .pcF_i(PCF),
     .InstrF_i(InstrF),
-    .pcPlus4F_i(pcPlus4F),
-    .pcD_o(pcD),
+    .pcPlus4F_i(PCPlus4F),
+    .pcD_o(PCD),
     .InstrD_o(InstrD),
-    .pcPlus4D_o(pcPlus4D)
+    .pcPlus4D_o(PCPlus4D)
 );
 
     assign op = InstrD[6:0];
@@ -165,25 +172,25 @@ module top #(
 
      pip_reg_e pip_reg_e(
         .clk_i(clk),
-        .RegWriteD_i(RegWrite),
-        .RegWriteE_o(),
-        .ResultSrcD_i(),
-        .ResultSrcE_o(),
-        .MemWriteD_i(),
-        .MemWriteE_o(),
-        .JumpD_i(),
-        .JumpE_o(),
-        .BranchD_i(),
-        .BranchE_o(),
-        .ALUControlD_i(),
-        .ALUControlE_o(),
-        .ALUSrcD_i(),
-        .ALUSrcE_o(),
-        .RD1D_i(),
-        .RD1E_o(),
-        .RD2D_i(),
-        .RD2E_o(),
-        .PCD_i(),
+        .RegWriteD_i(RegWriteD),
+        .RegWriteE_o(RegWriteE),
+        .ResultSrcD_i(ResultSrcD),
+        .ResultSrcE_o(ResultSrcE),
+        .MemWriteD_i(MemWriteD),
+        .MemWriteE_o(MemWriteE),
+        .JumpD_i(JumpD),
+        .JumpE_o(JumpE),
+        .BranchD_i(BranchD),
+        .BranchE_o(BranchE),
+        .ALUControlD_i(ALUControlD),
+        .ALUControlE_o(ALUControlE),
+        .ALUSrcD_i(ALUSrcD),
+        .ALUSrcE_o(ALUSrcE),
+        .RD1D_i(RD1D),
+        .RD1E_o(RD1E),
+        .RD2D_i(RD2D),
+        .RD2E_o(RD2E),
+        .PCD_i(PCD),
         .PCE_o(),
         .RdD_i(),
         .RdE_o(),
@@ -229,8 +236,8 @@ module top #(
         .ReadDataW_o(ReadDataW),
         .RdM_i(rs3M),
         .RdW_o(rs3W),
-        .pcPlus4M_i(pcPlus4M),
-        .pcPlus4W_o(pcPlus4W)
+        .pcPlus4M_i(PCPlus4M),
+        .pcPlus4W_o(PCPlus4W)
     );
 
     //mux 3
