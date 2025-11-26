@@ -68,6 +68,29 @@ TEST_F(CpuTestbench, BaseProgramTest)
     }
 }
 
+TEST_F(CpuTestbench, TestPipelineProgram)
+{
+    bool success = false;
+    setupTest("7_pipeline_program");
+    system("./assemble.sh asm/7_pipeline_program.s");
+    initSimulation();
+    for (int i = 0; i < CYCLES; i++)
+    {
+        runSimulation(1);
+        if (top_->a0 == 9)
+        {
+            SUCCEED();
+            success = true;
+            break;
+        }
+    }
+    if (!success)
+    {
+        FAIL() << "a0 did not reach 9";
+    }
+}
+
+
 
 int main(int argc, char **argv)
 {
