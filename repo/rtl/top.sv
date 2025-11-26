@@ -137,14 +137,14 @@ module top #(
     assign funct7 = InstrD[30];
 
 
-    logic [ADDRESS_WIDTH-1:0] Rs1D;
-    logic [ADDRESS_WIDTH-1:0] Rs1E;
-    logic [ADDRESS_WIDTH-1:0] Rs2D;
-    logic [ADDRESS_WIDTH-1:0] Rs2E;
-    logic [ADDRESS_WIDTH-1:0] RdD;
-    logic [ADDRESS_WIDTH-1:0] RdE;
-    logic [ADDRESS_WIDTH-1:0] RdM;
-    logic [ADDRESS_WIDTH-1:0] RdW;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs1D;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs1E;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs2D;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs2E;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] RdD;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] RdE;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] RdM;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] RdW;
 
 
     assign Rs1D = InstrD[19:15];
