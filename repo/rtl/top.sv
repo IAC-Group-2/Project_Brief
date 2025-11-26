@@ -19,7 +19,7 @@ module top #(
     
     //Instruction Memory Outputs
     logic[INSTRUCTION_WIDTH-1:0]    InstrF; //Fetch
-    ogic[INSTRUCTION_WIDTH-1:0]     InstrD; //Decode
+    logic[INSTRUCTION_WIDTH-1:0]     InstrD; //Decode
 
     //PC adder
     logic [PC_WIDTH-1:0]            pcPlus4F; //Fetch
@@ -71,13 +71,17 @@ module top #(
     logic [2:0]                     funct3;
     logic                           funct7;
     
+    logic                           en;
+
+    assign en = 1;
+
     assign pcNext = PCSrc ? pcTarget : pcPlus4;
  
     pc_reg pc_reg (
         .clk_i(clk),
         .rst_i(rst),
         .pcNext_i(pcNext),
-        .en_i() //from Hazard Unit
+        .en_i(en), //from Hazard Unit
         .pc_o(pc)
     );
 
@@ -95,7 +99,7 @@ module top #(
 
     pip_reg_d pip_reg_d (
     .clk_i(clk),
-    .en_i(),
+    .en_i(en),
     .pcF_i(pcF),
     .InstrF_i(InstrF),
     .pcPlus4F_i(pcPlus4F),
@@ -169,7 +173,7 @@ module top #(
         .data_o(ReadDataM)
     );
 
-    pip_reg_d pip_reg_d(
+    pip_reg_w pip_reg_w(
         .clk_i(clk),
         .RegWriteM_i(RegWriteM),
         .RegWriteW_o(RegWriteW),
