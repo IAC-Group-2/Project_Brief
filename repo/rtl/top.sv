@@ -50,8 +50,8 @@ module top #(
 
 
     //Register File Outputs
-    logic[DATA_WIDTH-1:0]           SrcA;
-    logic[DATA_WIDTH-1:0]           WriteData;
+    logic[DATA_WIDTH-1:0]           RD1D;
+    logic[DATA_WIDTH-1:0]           RD2D;
 
     //Extend Output
     logic[DATA_WIDTH-1:0]           ImmExtD;
@@ -150,7 +150,6 @@ module top #(
         .imm_ext_o(ImmExtD)
     );
     
-    
 
     regfile regfile(
         .clk_i(clk),
@@ -159,9 +158,9 @@ module top #(
         .A3_i(rs3W),
         .WD3_i(Result),
         .WE3_i(RegWrite),
-        .RD1_o(SrcA),
-        .RD2_o(WriteData),
-        .A0_o(a0)
+        .RD1_o(RD1D),
+        .RD2_o(RD2D),
+        .A0_o(a0) // remove?
     );
 
      pip_reg_e pip_reg_e(
