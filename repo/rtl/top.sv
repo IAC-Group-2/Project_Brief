@@ -231,7 +231,7 @@ module top #(
     //3way mux so assumes ForwardAE != 11
     assign SrcAE = FowardAE[1] ? (FowardAE[0] ? 'b0 : ALUResultM) : (ForwardAE[0] ? ResultW : RD1E); 
     //3way mux so assumes ForwardBE != 11
-    assign WriteDataE = RD2E; // change later for hazard unit
+    assign WriteDataE = ForwardBE[1] ? (ForwardBE[0] ? 'b0 : ALUResultM) : (ForwardBE[0] ? ResultW : RD2E);
     assign SrcBE = ALUSrcE ? ImmExtE : WriteDataE; 
 
     ALU ALU (
