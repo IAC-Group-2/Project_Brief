@@ -8,7 +8,7 @@ module control_unit(
     output  logic   [2:0]   ALUControl_o,
     output  logic           ALUSrc_o,
     output  logic   [2:0]   ImmSrc_o,
-    output  logic           ResultSrc_o,
+    output  logic   [1:0]   ResultSrc_o,
     output  logic           PCSrc_o
 );
 
@@ -20,7 +20,7 @@ always_comb begin
     RegWrite_o = 0;
     MemWrite_o = 0;
     ALUSrc_o = 0;
-    ResultSrc_o = 0;
+    ResultSrc_o = 2'b00;
     ImmSrc_o = 3'b000;
     branch = 0;
     ALUOp = 2'b00;
@@ -31,7 +31,7 @@ always_comb begin
             RegWrite_o = 1;
             ALUSrc_o = 0;
             MemWrite_o = 0;
-            ResultSrc_o = 0;
+            ResultSrc_o = 2'b00;  // ALU result
             branch = 0;
             ALUOp = 2'b10;
         end
@@ -40,7 +40,7 @@ always_comb begin
         7'b0010011: begin
             RegWrite_o = 1;
             ALUSrc_o = 1;
-            ResultSrc_o = 0;
+            ResultSrc_o = 2'b00;  // ALU result
             ImmSrc_o = 3'b000;
             branch = 0;
             ALUOp = 2'b10;
@@ -50,7 +50,7 @@ always_comb begin
         7'b0000011: begin
             RegWrite_o = 1;
             ALUSrc_o = 1;
-            ResultSrc_o = 1; 
+            ResultSrc_o = 2'b01;  // Memory data
             ImmSrc_o = 3'b000; 
             branch = 0;
             ALUOp = 2'b00;
@@ -69,7 +69,7 @@ always_comb begin
             RegWrite_o = 0;
             MemWrite_o = 0;
             ALUSrc_o = 0;
-            ResultSrc_o = 0;
+            ResultSrc_o = 2'b00;
             ImmSrc_o = 3'b000;
             branch = 0;
             ALUOp = 2'b00;

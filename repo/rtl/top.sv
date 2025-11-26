@@ -86,7 +86,7 @@ module top #(
     logic[DATA_WIDTH-1:0]           ReadDataW; //Writeback
 
     //Mux 2
-    logic[DATA_WIDTH-1:0]           Result;
+    logic[DATA_WIDTH-1:0]           ResultW;
 
     //Control block inputs 
     logic [6:0]                     op;
@@ -96,7 +96,7 @@ module top #(
     logic                           en;
 
     assign en = 1;
-
+    assign PCSrcE = JumpE;
     assign PCNext = PCSrcE ? PCTargetE : PCPlus4F; 
     // NOTE: after control block changes PCSrcE, make PCSrcE = the or stuff in diag
  
@@ -158,10 +158,12 @@ module top #(
         .funct3_i(funct3),
         .funct7_i(funct7),
         .RegWrite_o(RegWriteD),
+        .MemWrite_o(MemWriteD),
         .ALUControl_o(ALUControlD),
         .ALUSrc_o(ALUSrcD),
         .ImmSrc_o(ImmSrcD),
-        .PCSrc_o(PCSrcE) // CHANGE CU TO OUTPUT JUMP, BRANCH STUFF INSTEAD 
+        .ResultSrc_o(ResultSrcD),
+        .PCSrc_o(JumpD) // CHANGE CU TO OUTPUT JUMP, BRANCH STUFF INSTEAD 
     );
 
     //variable changing is needed
@@ -177,7 +179,7 @@ module top #(
         .A1_i(Rs1D),
         .A2_i(Rs2D),
         .A3_i(RdW),
-        .WD3_i(Result),
+        .WD3_i(ResultW),
         .WE3_i(RegWriteW), // THIS NEEDS TO CHANGE TO A MUX OUTPUT OF W STAGE
         .RD1_o(RD1D),
         .RD2_o(RD2D),
@@ -186,6 +188,7 @@ module top #(
 
     logic clr;
     assign clr = 'b0;
+    assign BranchD = 'b0;  // No branching for now
 
     pip_reg_e pip_reg_e(
         .clk_i(clk),
@@ -278,6 +281,8 @@ module top #(
     );
 
     //mux 3
-    assign Result = ResultSrcW ? ReadDataW : ALUResultW;
+
+    assign ResultW = ResultSrcW[1] ? (ResultSrcW[0] ? 'b0 : PCPlus4W) : (ResultSrcW[0] ? ReadDataW : ALUResultW);
+
 
 endmodule

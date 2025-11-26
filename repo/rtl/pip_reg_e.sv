@@ -54,7 +54,7 @@ module pip_reg_e #( //Decode to execute stage
 );
 
 always_ff @(posedge clk_i) begin
-    if (clr_i) begin
+    if (!clr_i) begin  // Normal operation: pass data through
         RegWriteE_o     <= RegWriteD_i;
         ResultSrcE_o    <= ResultSrcD_i;
         MemWriteE_o     <= MemWriteD_i;

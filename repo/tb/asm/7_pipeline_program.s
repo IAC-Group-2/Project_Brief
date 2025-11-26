@@ -9,3 +9,4 @@ main:
     addi    a5, zero, 0x6       # a5 = 6
     addi    a6, zero, 0x7       # a6 = 7
     addi    a7, zero, 0x8       # a7 = 8
+    

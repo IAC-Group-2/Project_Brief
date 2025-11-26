@@ -86,7 +86,7 @@ TEST_F(CpuTestbench, TestPipelineProgram)
     }
     if (!success)
     {
-        FAIL() << "a0 did not reach 9";
+        FAIL() << "a0 did not reach 9 a0:" <<  top_->a0;
     }
 }
 
