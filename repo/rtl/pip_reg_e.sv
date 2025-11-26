@@ -49,7 +49,7 @@ module pip_reg_e #( //Decode to execute stage
     output  logic [INSTRUCTION_WIDTH-1:0]   ImmExtE_o, //Execute
     
     input   logic [PC_WIDTH-1:0]            PCPlus4D_i, //Decode
-    output  logic [PC_WIDTH-1:0]            PCPlus4E_o, //Execute
+    output  logic [PC_WIDTH-1:0]            PCPlus4E_o //Execute
     
 );
 

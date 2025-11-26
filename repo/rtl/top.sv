@@ -15,6 +15,7 @@ module top #(
     
     //shift register
     logic [PC_WIDTH-1:0]            PCF; //Fetch
+    logic [PC_WIDTH-1:0]            PCE; //Execute
     logic [PC_WIDTH-1:0]            PCD; //Decode
     
     //Instruction Memory Outputs
@@ -30,7 +31,7 @@ module top #(
 
 
     //Control block outputs
-    logic                           PCSrc; // ?
+    logic                           PCSrcE;
     logic                           RegWriteD;
     logic                           RegWriteE;
     logic                           RegWriteM;
@@ -50,7 +51,7 @@ module top #(
     logic [2:0]                     ALUControlE;
     logic                           ALUSrcD;
     logic                           ALUSrcE;
-    logic [1:0]                     ImmSrcD;
+    logic [2:0]                     ImmSrcD;
 
 
     //Register File Outputs
@@ -78,7 +79,7 @@ module top #(
     logic                           Zero;
 
     //Adder
-    logic [PC_WIDTH-1:0]            PCTarget;
+    logic [PC_WIDTH-1:0]            PCTargetE;
     
     //Data Memory
     logic[DATA_WIDTH-1:0]           ReadDataM; //Memory
@@ -96,26 +97,27 @@ module top #(
 
     assign en = 1;
 
-    assign PCNext = PCSrc ? PCTarget : PCPlus4F; 
-    // NOTE: after control block changes pcsrc, make pcsrc = the or stuff in diag
+    assign PCNext = PCSrcE ? PCTargetE : PCPlus4F; 
+    // NOTE: after control block changes PCSrcE, make PCSrcE = the or stuff in diag
  
-    PC_reg PC_reg (
+    pc_reg pc_reg (
         .clk_i(clk),
         .rst_i(rst),
         .PCNext_i(PCNext),
         .en_i(en), //from Hazard Unit
-        .PC_o(PC)
+        .PC_o(PCF)
     );
 
     instr_mem instr_mem (
-        .A_i(PC),
+        .A_i(PCF),
         .RD_o(InstrF)
     );
 
     addr addr(
-        .PC_i(PCF),
-        .ImmOp_i(ImmExt),
-        .PCTarget_o(PCTarget),
+        .PCF_i(PCF),
+        .PCE_i(PCE),
+        .ImmOp_i(ImmExtE),
+        .PCTarget_o(PCTargetE),
         .PCPlus4_o(PCPlus4F)
     );
 
@@ -135,21 +137,20 @@ module top #(
     assign funct7 = InstrD[30];
 
 
-    logic [4:0] Rs1D;
-    logic [4:0] Rs1E;
-    logic [4:0] Rs2D;
-    logic [4:0] Rs2E;
-    logic [4:0] RdD;
-    logic [4:0] RdE;
-    logic [4:0] RdM;
-    logic [4:0] RdW;
+    logic [ADDRESS_WIDTH-1:0] Rs1D;
+    logic [ADDRESS_WIDTH-1:0] Rs1E;
+    logic [ADDRESS_WIDTH-1:0] Rs2D;
+    logic [ADDRESS_WIDTH-1:0] Rs2E;
+    logic [ADDRESS_WIDTH-1:0] RdD;
+    logic [ADDRESS_WIDTH-1:0] RdE;
+    logic [ADDRESS_WIDTH-1:0] RdM;
+    logic [ADDRESS_WIDTH-1:0] RdW;
 
 
     assign Rs1D = InstrD[19:15];
     assign Rs2D = InstrD[24:20];
     assign RdD = InstrD[11:7];
 
-    assign Rs1D = InstrD[1:15];
 
     control_unit control_unit(
         .op_i(op),
@@ -160,7 +161,7 @@ module top #(
         .ALUControl_o(ALUControlD),
         .ALUSrc_o(ALUSrcD),
         .ImmSrc_o(ImmSrcD),
-        .PCSrc_o(PCSrc)
+        .PCSrc_o(PCSrcE) // CHANGE CU TO OUTPUT JUMP, BRANCH STUFF INSTEAD 
     );
 
     //variable changing is needed
@@ -183,8 +184,12 @@ module top #(
         .A0_o(a0) 
     );
 
-     pip_reg_e pip_reg_e(
+    logic clr;
+    assign clr = 'b0;
+
+    pip_reg_e pip_reg_e(
         .clk_i(clk),
+        .clr_i(clr),
         .RegWriteD_i(RegWriteD),
         .RegWriteE_o(RegWriteE),
         .ResultSrcD_i(ResultSrcD),
@@ -205,6 +210,10 @@ module top #(
         .RD2E_o(RD2E),
         .PCD_i(PCD),
         .PCE_o(PCE),
+        .Rs1D_i(Rs1D),
+        .Rs1E_o(Rs1E),
+        .Rs2D_i(Rs2D),
+        .Rs2E_o(Rs2E),
         .RdD_i(RdD),
         .RdE_o(RdE),
         .ImmExtD_i(ImmExtD),
@@ -216,17 +225,18 @@ module top #(
     
     assign SrcAE = RD1E; // change later for hazard unit
     assign WriteDataE = RD2E; // change later for hazard unit
-    assign SrcBE = ALUSrcE ? ImmExt : WriteDataE; 
+    assign SrcBE = ALUSrcE ? ImmExtE : WriteDataE; 
 
     ALU ALU (
         .SrcA_i(SrcAE),
         .SrcB_i(SrcBE),
-        .ALUControl_i(ALUControl),
+        .ALUControl_i(ALUControlE),
         .ALUResult_o(ALUResultE),
         .Zero_o(Zero)
     );    
 
     pip_reg_m pip_reg_m(
+        .clk_i(clk),
         .RegWriteE_i(RegWriteE),
         .RegWriteM_o(RegWriteM),
         .ResultSrcE_i(ResultSrcE),

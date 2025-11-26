@@ -1,4 +1,4 @@
-module PC_reg #(
+module pc_reg #(
     parameter DATA_WIDTH = 32
 )(
     input logic                     clk_i,

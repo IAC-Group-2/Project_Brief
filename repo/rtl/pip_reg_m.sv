@@ -24,7 +24,7 @@ module pip_reg_m #( //Execute to memory stage
     output  logic [REGISTER_ADDRESS_WIDTH-1:0]  RdM_o, //Memory
     
     input   logic [PC_WIDTH-1:0]            PCPlus4E_i, //Execute
-    output  logic [PC_WIDTH-1:0]            PCPlus4M_o, //Memory
+    output  logic [PC_WIDTH-1:0]            PCPlus4M_o //Memory
     
 );
 
