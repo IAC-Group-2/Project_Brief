@@ -89,8 +89,12 @@ module top #(
     logic[DATA_WIDTH-1:0]           ResultW;
 
     //Hazard Unit
-    logic[2:0]                      ForwardAE;
-    logic[2:0]                      ForwardBE;
+    logic                           StallF;
+    logic                           StallD;
+    logic                           FlushD;
+    logic                           FlushE;
+    logic[1:0]                      ForwardAE;
+    logic[1:0]                      ForwardBE;
 
     assign ForwardAE = 'b0;
     assign ForwardBE = 'b0;
@@ -99,20 +103,40 @@ module top #(
     logic [6:0]                     op;
     logic [2:0]                     funct3;
     logic                           funct7;
-    logic                           en;
 
     assign en = 1;
     assign PCSrcE = JumpE || (BranchE && ZeroE);
-    assign PCNext = PCSrcE ? PCTargetE : PCPlus4F; 
+    assign PCNext = PCSrcE ? PCTargetE : PCPlus4F;
     // NOTE: after control block changes PCSrcE, make PCSrcE = the or stuff in diag
  
     pc_reg pc_reg (
         .clk_i(clk),
         .rst_i(rst),
         .PCNext_i(PCNext),
-        .en_i(en), //from Hazard Unit
+        .en_i(StallF), //from Hazard Unit
         .PC_o(PCF)
     );
+
+    hazard_unit hazard_unit(
+        .Rs1D_i(Rs1D),
+        .Rs2D_i(Rs2D),
+        .Rs1E_i(Rs1E),
+        .Rs2E_i(Rs2E),
+        .RdE_i(RdE),
+        .ResultSrcE_i(ResultSrcE),
+        .RdM_i(RdM),
+        .RegWriteM_i(RegWriteM),
+        .RdW_i(RdW),
+        .RegWriteW_i(RegWriteW),
+        .PCSrcE_i(PCSrcE),
+        .ForwardAE_o(ForwardAE),
+        .ForwardBE_o(ForwardBE),
+        .StallF_o(StallF),
+        .StallD_o(StallD),
+        .FlushD_o(FlushD),
+        .FlushE_o(FlushE)
+    );
+
 
     instr_mem instr_mem (
         .A_i(PCF),
@@ -129,7 +153,8 @@ module top #(
 
     pip_reg_d pip_reg_d (
         .clk_i(clk),
-        .en_i(en),
+        .en_i(StallD),
+        .clr_i(FlushD),
         .PCF_i(PCF),
         .InstrF_i(InstrF),
         .PCPlus4F_i(PCPlus4F),
@@ -199,7 +224,7 @@ module top #(
 
     pip_reg_e pip_reg_e(
         .clk_i(clk),
-        .clr_i(clr),
+        .clr_i(FlushE),
         .RegWriteD_i(RegWriteD),
         .RegWriteE_o(RegWriteE),
         .ResultSrcD_i(ResultSrcD),
