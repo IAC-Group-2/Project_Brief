@@ -153,7 +153,7 @@ module top #(
 
     pip_reg_d pip_reg_d (
         .clk_i(clk),
-        .en_i(StallD),
+        .en_i(!StallD),
         .clr_i(FlushD),
         .PCF_i(PCF),
         .InstrF_i(InstrF),
