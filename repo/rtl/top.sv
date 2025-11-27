@@ -76,7 +76,7 @@ module top #(
     logic[DATA_WIDTH-1:0]           ALUResultE; //Execute
     logic[DATA_WIDTH-1:0]           ALUResultM; //Memory
     logic[DATA_WIDTH-1:0]           ALUResultW; //Writeback
-    logic                           Zero;
+    logic                           ZeroE;
 
     //Adder
     logic [PC_WIDTH-1:0]            PCTargetE;
@@ -88,24 +88,49 @@ module top #(
     //Mux 2
     logic[DATA_WIDTH-1:0]           ResultW;
 
+    //Hazard Unit
+    logic                           StallF;
+    logic                           StallD;
+    logic                           FlushD;
+    logic                           FlushE;
+    logic[1:0]                      ForwardAE;
+    logic[1:0]                      ForwardBE;
+
     //Control block inputs 
     logic [6:0]                     op;
     logic [2:0]                     funct3;
     logic                           funct7;
-    
-    logic                           en;
 
-    assign en = 1;
-    assign PCSrcE = JumpE;
-    assign PCNext = PCSrcE ? PCTargetE : PCPlus4F; 
+    assign PCSrcE = JumpE || (BranchE && ZeroE);
+    assign PCNext = PCSrcE ? PCTargetE : PCPlus4F;
     // NOTE: after control block changes PCSrcE, make PCSrcE = the or stuff in diag
- 
+
     pc_reg pc_reg (
         .clk_i(clk),
         .rst_i(rst),
         .PCNext_i(PCNext),
-        .en_i(en), //from Hazard Unit
+        .en_i(!StallF), //from Hazard Unit
         .PC_o(PCF)
+    );
+
+    hazard_unit hazard_unit(
+        .Rs1D_i(Rs1D),
+        .Rs2D_i(Rs2D),
+        .Rs1E_i(Rs1E),
+        .Rs2E_i(Rs2E),
+        .RdE_i(RdE),
+        .ResultSrcE0_i(ResultSrcE[0]),
+        .RdM_i(RdM),
+        .RegWriteM_i(RegWriteM),
+        .RdW_i(RdW),
+        .RegWriteW_i(RegWriteW),
+        .PCSrcE_i(PCSrcE),
+        .ForwardAE_o(ForwardAE),
+        .ForwardBE_o(ForwardBE),
+        .StallF_o(StallF),
+        .StallD_o(StallD),
+        .FlushD_o(FlushD),
+        .FlushE_o(FlushE)
     );
 
     instr_mem instr_mem (
@@ -122,15 +147,16 @@ module top #(
     );
 
     pip_reg_d pip_reg_d (
-    .clk_i(clk),
-    .en_i(en),
-    .PCF_i(PCF),
-    .InstrF_i(InstrF),
-    .PCPlus4F_i(PCPlus4F),
-    .PCD_o(PCD),
-    .InstrD_o(InstrD),
-    .PCPlus4D_o(PCPlus4D)
-);
+        .clk_i(clk),
+        .en_i(!StallD),
+        .clr_i(FlushD),
+        .PCF_i(PCF),
+        .InstrF_i(InstrF),
+        .PCPlus4F_i(PCPlus4F),
+        .PCD_o(PCD),
+        .InstrD_o(InstrD),
+        .PCPlus4D_o(PCPlus4D)
+    );
 
     assign op = InstrD[6:0];
     assign funct3 = InstrD[14:12];
@@ -152,9 +178,11 @@ module top #(
     assign RdD = InstrD[11:7];
 
 
+    //Control unit needs to be modified to have JumpD, BranchD
+    //Control unit must not take input from zeroE, get rid of PCSrcE output pls
     control_unit control_unit(
         .op_i(op),
-        .Zero_i(Zero),
+        .Zero_i(ZeroE),
         .funct3_i(funct3),
         .funct7_i(funct7),
         .RegWrite_o(RegWriteD),
@@ -164,6 +192,7 @@ module top #(
         .ImmSrc_o(ImmSrcD),
         .ResultSrc_o(ResultSrcD),
         .PCSrc_o(JumpD) // CHANGE CU TO OUTPUT JUMP, BRANCH STUFF INSTEAD 
+        // SHOULD ALSO HAVE A BRANCHD OUTPUT HERE
     );
 
     //variable changing is needed
@@ -175,24 +204,21 @@ module top #(
     
 
     regfile regfile(
-        .clk_i(clk),
+        .clk_i(!clk),
         .A1_i(Rs1D),
         .A2_i(Rs2D),
         .A3_i(RdW),
         .WD3_i(ResultW),
-        .WE3_i(RegWriteW), // THIS NEEDS TO CHANGE TO A MUX OUTPUT OF W STAGE
+        .WE3_i(RegWriteW),
         .RD1_o(RD1D),
         .RD2_o(RD2D),
         .A0_o(a0) 
     );
 
-    logic clr;
-    assign clr = 'b0;
-    assign BranchD = 'b0;  // No branching for now
 
     pip_reg_e pip_reg_e(
         .clk_i(clk),
-        .clr_i(clr),
+        .clr_i(FlushE),
         .RegWriteD_i(RegWriteD),
         .RegWriteE_o(RegWriteE),
         .ResultSrcD_i(ResultSrcD),
@@ -225,9 +251,10 @@ module top #(
         .PCPlus4E_o(PCPlus4E)
     );
 
-    
-    assign SrcAE = RD1E; // change later for hazard unit
-    assign WriteDataE = RD2E; // change later for hazard unit
+    //3way mux so assumes ForwardAE != 11
+    assign SrcAE = ForwardAE[1] ? (ForwardAE[0] ? 'b0 : ALUResultM) : (ForwardAE[0] ? ResultW : RD1E); 
+    //3way mux so assumes ForwardBE != 11
+    assign WriteDataE = ForwardBE[1] ? (ForwardBE[0] ? 'b0 : ALUResultM) : (ForwardBE[0] ? ResultW : RD2E);
     assign SrcBE = ALUSrcE ? ImmExtE : WriteDataE; 
 
     ALU ALU (
@@ -235,8 +262,9 @@ module top #(
         .SrcB_i(SrcBE),
         .ALUControl_i(ALUControlE),
         .ALUResult_o(ALUResultE),
-        .Zero_o(Zero)
+        .Zero_o(ZeroE)
     );    
+
 
     pip_reg_m pip_reg_m(
         .clk_i(clk),

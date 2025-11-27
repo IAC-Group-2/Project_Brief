@@ -91,6 +91,34 @@ TEST_F(CpuTestbench, TestPipelineProgram)
 }
 
 
+TEST_F(CpuTestbench, Program8CpyReplaceTest)
+{
+    bool success = false;
+    setupTest("8_program_6_cpy_replace");
+    system("./assemble.sh asm/8_program_6_cpy_replace.s");
+    initSimulation();
+
+    // After one full inner-loop cycle, a0 should equal 100
+    const int expectedA0 = 100;
+
+    for (int i = 0; i < CYCLES; i++)
+    {
+        runSimulation(1);
+
+        if (top_->a0 == expectedA0)
+        {
+            SUCCEED();
+            success = true;
+            break;
+        }
+    }
+
+    if (!success)
+    {
+        FAIL() << "a0 never reached expected value 100";
+    }
+}
+
 
 int main(int argc, char **argv)
 {

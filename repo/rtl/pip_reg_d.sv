@@ -4,6 +4,8 @@ module pip_reg_d #(
 )(
     input   logic                           clk_i,
     input   logic                           en_i,
+    input   logic                           clr_i,
+
     input   logic [PC_WIDTH-1:0]            PCF_i, //Fetch
     output  logic [PC_WIDTH-1:0]            PCD_o, //Decode
     
@@ -15,7 +17,12 @@ module pip_reg_d #(
 );
 
 always_ff @(posedge clk_i) begin
-    if (en_i) begin
+    if (clr_i) begin
+        PCD_o       <= 'b0;
+        InstrD_o    <= 'b0;
+        PCPlus4D_o  <= 'b0;
+    end
+    else if (en_i) begin
         PCD_o       <= PCF_i;
         InstrD_o    <= InstrF_i;
         PCPlus4D_o  <= PCPlus4F_i;
