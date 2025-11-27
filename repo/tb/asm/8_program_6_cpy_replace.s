@@ -13,6 +13,6 @@ iloop:
     addi    a1, a1, 1           # i++
     bne     a1, t1, iloop       # if i != 255, goto iloop
 
-    add     a0, a0, 100         # increment counter
+    addi    a0, a0, 100         # increment counter
 
     bne     t1, zero, mloop     # infinite loop
