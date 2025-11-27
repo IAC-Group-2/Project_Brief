@@ -108,12 +108,12 @@ module top #(
     assign PCSrcE = JumpE || (BranchE && ZeroE);
     assign PCNext = PCSrcE ? PCTargetE : PCPlus4F;
     // NOTE: after control block changes PCSrcE, make PCSrcE = the or stuff in diag
- 
+
     pc_reg pc_reg (
         .clk_i(clk),
         .rst_i(rst),
         .PCNext_i(PCNext),
-        .en_i(StallF), //from Hazard Unit
+        .en_i(!StallF), //from Hazard Unit
         .PC_o(PCF)
     );
 
