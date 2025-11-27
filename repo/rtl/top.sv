@@ -207,7 +207,7 @@ module top #(
     
 
     regfile regfile(
-        .clk_i(clk),
+        .clk_i(!clk),
         .A1_i(Rs1D),
         .A2_i(Rs2D),
         .A3_i(RdW),
