@@ -98,7 +98,9 @@ module top #(
         .funct3_i(funct3),
         .funct7_i(funct7),
         .RegWrite_o(RegWrite),
+        .MemWrite_o(MemWrite),
         .ALUControl_o(ALUControl),
+        .ResultSrc_o(ResultSrc),
         .ALUSrc_o(ALUSrc),
         .ImmSrc_o(ImmSrc),
         .PCSrc_o(PCSrc)

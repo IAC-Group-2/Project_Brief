@@ -72,23 +72,6 @@ always_comb begin
             ALUOp = 2'b00; 
             jump = 1;
         end
-
-        // I-Type (JALR)
-        7'b1100111: begin
-            RegWrite_o = 1;
-            ALUSrc_o = 1;
-            ImmSrc_o = 3'b000; 
-            ALUOp = 2'b00; 
-            jump = 1;
-        end
-
-        // U-Type
-        7'b0110111, 7'b0010111: begin
-            RegWrite_o = 1;       
-            ALUSrc_o = 1;
-            ImmSrc_o = 3'b011;
-            ALUOp = 2'b00;
-        end
         
         default: ; // already defined above
     endcase
@@ -99,20 +82,6 @@ always_comb begin
     case(ALUOp)
         2'b00: ALUControl_o = 3'b000;
         2'b01: ALUControl_o = 3'b001;
-
-        // R-Type and I-Type
-        2'b10: begin
-            case (funct3_i)
-                3'b000: begin
-                    if (funct7_i) ALUControl_o = 3'b001; // sub
-                    else ALUControl_o = 3'b000; // add
-                end
-                3'b010:  ALUControl_o = 3'b101; // slt
-                3'b110:  ALUControl_o = 3'b011; // or
-                3'b111:  ALUControl_o = 3'b010; // and
-                default: ALUControl_o = 3'b000;
-            endcase
-        end
         default: ALUControl_o = 3'b000;
     endcase
 end
@@ -124,10 +93,10 @@ always_comb begin
         PCSrc_o = 1'b1;
     end else if (branch) begin
         // B-Type: Conditional branch decision
-        if (funct3_i[0] == 1'b1) 
+        if (ALUControl_o == 3'b001 && ALUOp == 2'b01) 
             PCSrc_o = ~Zero_i; // BNE (branch is not zero)
         else                     
-            PCSrc_o = Zero_i;  // BEQ (branch if zero)
+            PCSrc_o = Zero_i; // BEQ (branch if zero)
     end else begin
         // R/I/S-Type
         PCSrc_o = 1'b0;

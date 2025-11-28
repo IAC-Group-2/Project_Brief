@@ -31,11 +31,6 @@ always_comb begin
             ImmInstr_i[11:7]
         };
 
-        // U-type
-        3'b011: ImmExt_o = { 
-            ImmInstr_i[31:12], 12'b0 
-        };
-
         // J-type
         3'b100: ImmExt_o = {
             {11{ImmInstr_i[31]}},
