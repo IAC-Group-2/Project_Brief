@@ -2,11 +2,11 @@ module instr_mem #(
     parameter   ADDRESS_WIDTH = 32,
                 BYTE_WIDTH = 8
 )(
-    input  logic [31:0] A_i,
-    output logic [31:0] RD_o
+    input  logic [ADDRESS_WIDTH-1:0] A_i,
+    output logic [ADDRESS_WIDTH-1:0] RD_o
 );
 
-logic [31:0] instr_rom [1023:0];
+logic [ADDRESS_WIDTH-1:0] instr_rom [1023:0];
 logic [BYTE_WIDTH-1:0] byte_rom [4095:0];
 initial begin
     integer i;

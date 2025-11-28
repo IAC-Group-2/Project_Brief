@@ -31,6 +31,7 @@ module top #(
 
 
     //Control block outputs
+<<<<<<< HEAD
     logic                           PCSrcE;
     logic                           RegWriteD;
     logic                           RegWriteE;
@@ -53,6 +54,15 @@ module top #(
     logic                           ALUSrcE;
     logic [2:0]                     ImmSrcD;
 
+=======
+    logic                           PCSrc;
+    logic                           ResultSrc;
+    logic                           MemWrite;
+    logic [2:0]                     ALUControl;
+    logic                           ALUSrc;
+    logic [2:0]                     ImmSrc;
+    logic                           RegWrite;
+>>>>>>> d66f952e939157a6850dcd2adfbc1be02cb4cd4c
 
     //Register File Outputs
     logic[DATA_WIDTH-1:0]           RD1D;
@@ -185,6 +195,7 @@ module top #(
         .Zero_i(ZeroE),
         .funct3_i(funct3),
         .funct7_i(funct7),
+<<<<<<< HEAD
         .RegWrite_o(RegWriteD),
         .MemWrite_o(MemWriteD),
         .ALUControl_o(ALUControlD),
@@ -193,13 +204,28 @@ module top #(
         .ResultSrc_o(ResultSrcD),
         .PCSrc_o(JumpD) // CHANGE CU TO OUTPUT JUMP, BRANCH STUFF INSTEAD 
         // SHOULD ALSO HAVE A BRANCHD OUTPUT HERE
+=======
+        .RegWrite_o(RegWrite),
+        .MemWrite_o(MemWrite),
+        .ALUControl_o(ALUControl),
+        .ResultSrc_o(ResultSrc),
+        .ALUSrc_o(ALUSrc),
+        .ImmSrc_o(ImmSrc),
+        .PCSrc_o(PCSrc)
+>>>>>>> d66f952e939157a6850dcd2adfbc1be02cb4cd4c
     );
 
     //variable changing is needed
     sign_extend sign_extend (
+<<<<<<< HEAD
         .imm_src_i(ImmSrcD),
         .imm_instr_i(InstrD), //input
         .imm_ext_o(ImmExtD)
+=======
+        .ImmSrc_i(ImmSrc),
+        .ImmInstr_i(Instr), //input
+        .ImmExt_o(ImmExt)
+>>>>>>> d66f952e939157a6850dcd2adfbc1be02cb4cd4c
     );
     
 

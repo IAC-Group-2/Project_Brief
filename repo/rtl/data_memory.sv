@@ -11,7 +11,14 @@ module data_memory #(
     output logic [DATA_WIDTH-1:0] data_o
 );
 
-logic [DATA_WIDTH-1:0] ram_array [2**ADDRESS_WIDTH-1:0];
+logic [7:0] ram_array [131071-1:0];
+
+initial begin
+    for (int i = 0; i < 131072; i++) begin
+        ram_array[i]=8'b0;
+    end
+    $readmemh("sine.mem", ram_array, "h10000");
+end
 
 always_ff @(posedge clk_i) begin
     if (wr_en_i == 1'b1)
