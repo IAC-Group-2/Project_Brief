@@ -1,20 +1,26 @@
 module instr_mem #(
-    parameter   ADDRESS_WIDTH = 32,
-                BYTE_WIDTH = 8
+    parameter ADDRESS_WIDTH = 32,
+              BYTE_WIDTH = 8,
+              INSTR_WIDTH = 32
 )(
-    input  logic [ADDRESS_WIDTH-1:0] A_i,
-    output logic [ADDRESS_WIDTH-1:0] RD_o
+    input  logic [ADDRESS_WIDTH-1:0]    A_i,
+    output logic [INSTR_WIDTH-1:0]      RD_o
 );
 
-logic [ADDRESS_WIDTH-1:0] instr_rom [1023:0];
-logic [BYTE_WIDTH-1:0] byte_rom [4095:0];
-initial begin
-    integer i;
-    $readmemh("program.hex", byte_rom);
-    for (i=0; i<1024; i = i + 1)
-        instr_rom[i] = {byte_rom[i*4+3], byte_rom[i*4+2], byte_rom[i*4+1], byte_rom[i*4+0]};
-end
+    logic [BYTE_WIDTH-1:0] rom_array [4095:0]; 
 
-assign RD_o = instr_rom[A_i[11:2]];
+    initial begin
+        $readmemh("program.hex", rom_array); 
+    end
+
+    always_comb begin
+        // piece together 32 bit word from 4 bytes (little endian)
+        RD_o = {
+            rom_array[A_i + 3], 
+            rom_array[A_i + 2], 
+            rom_array[A_i + 1], 
+            rom_array[A_i + 0]
+        }; 
+    end
 
 endmodule
