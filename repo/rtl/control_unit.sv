@@ -9,12 +9,12 @@ module control_unit(
     output  logic           ALUSrc_o,
     output  logic   [2:0]   ImmSrc_o,
     output  logic   [1:0]   ResultSrc_o,
-    output  logic   [1:0]   PCSrc_o
+    output  logic   [1:0]   PCSrc_o,
+    output  logic           Jump_o,
+    output  logic           Branch_o
 );
 
-    logic       branch;
     logic [1:0] ALUOp;
-    logic       jump;
     logic       jalr;
 
     // Main Decoder
@@ -24,8 +24,8 @@ module control_unit(
         ALUSrc_o    = 0;
         ResultSrc_o = 0;
         ImmSrc_o    = 3'b000;
-        branch      = 0;
-        jump        = 0;
+        Branch_o      = 0;
+        Jump_o        = 0;
         jalr        = 0;
         ALUOp       = 2'b00;
 
@@ -58,7 +58,7 @@ module control_unit(
             // B-Type
             7'b1100011: begin
                 ImmSrc_o = 3'b001;
-                branch   = 1;
+                Branch_o   = 1;
                 ALUOp    = 2'b01;
             end
             // JAL
@@ -66,7 +66,7 @@ module control_unit(
                 RegWrite_o  = 1;
                 ImmSrc_o    = 3'b100;
                 ALUOp       = 2'b00; 
-                jump        = 1;
+                Jump_o        = 1;
                 ResultSrc_o = 2'b10; 
             end
             // JALR
@@ -113,9 +113,9 @@ module control_unit(
 
     // PC Source Selector
     always_comb begin
-        if (jump)       PCSrc_o = 2'b01; // JAL
+        if (Jump_o)       PCSrc_o = 2'b01; // JAL
         else if (jalr)  PCSrc_o = 2'b10; // JALR
-        else if (branch) begin
+        else if (Branch_o) begin
             case (funct3_i)
                 3'b000:  PCSrc_o = (Zero_i)  ? 2'b01 : 2'b00; // BEQ
                 3'b001:  PCSrc_o = (!Zero_i) ? 2'b01 : 2'b00; // BNE
@@ -124,5 +124,6 @@ module control_unit(
         end 
         else        PCSrc_o = 2'b00; // Next instruction PC + 4
     end
+
 
 endmodule
