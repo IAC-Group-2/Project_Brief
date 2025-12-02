@@ -1,6 +1,5 @@
 module control_unit(
     input   logic   [6:0]   op_i,
-    input   logic           Zero_i,
     input   logic   [2:0]   funct3_i,
     input   logic           funct7_i,
     output  logic           RegWrite_o,
@@ -111,19 +110,7 @@ module control_unit(
         endcase
     end
 
-    // PC Source Selector
-    always_comb begin
-        if (Jump_o)       PCSrc_o = 2'b01; // JAL
-        else if (jalr)  PCSrc_o = 2'b10; // JALR
-        else if (Branch_o) begin
-            case (funct3_i)
-                3'b000:  PCSrc_o = (Zero_i)  ? 2'b01 : 2'b00; // BEQ
-                3'b001:  PCSrc_o = (!Zero_i) ? 2'b01 : 2'b00; // BNE
-                default: PCSrc_o = 2'b00;
-            endcase
-        end 
-        else        PCSrc_o = 2'b00; // Next instruction PC + 4
-    end
+    
 
 
 endmodule
