@@ -1,23 +1,23 @@
 module top #(
-    REGISTER_ADDRESS_WIDTH = 5,
+    parameter REGISTER_ADDRESS_WIDTH = 5,
     DATA_WIDTH = 32,
     INSTRUCTION_WIDTH = 32,
     PC_WIDTH = 32
 ) (
     input   logic                   clk,
     input   logic                   rst,
-    input   logic                   trigger,
+    input   logic                   trigger, // Removed to prevent warnings
     output  logic [DATA_WIDTH-1:0]  a0
 );
 
     //mux 0
     logic [PC_WIDTH-1:0]            PCNext;
-    
+
     //shift register
     logic [PC_WIDTH-1:0]            PCF; //Fetch
     logic [PC_WIDTH-1:0]            PCE; //Execute
     logic [PC_WIDTH-1:0]            PCD; //Decode
-    
+
     //Instruction Memory Outputs
     logic[INSTRUCTION_WIDTH-1:0]    InstrF; //Fetch
     logic[INSTRUCTION_WIDTH-1:0]    InstrD; //Decode
@@ -28,7 +28,6 @@ module top #(
     logic [PC_WIDTH-1:0]            PCPlus4E; //Decode
     logic [PC_WIDTH-1:0]            PCPlus4M; //Memory
     logic [PC_WIDTH-1:0]            PCPlus4W; //Writeback
-
 
     //Control block outputs
     logic                           PCSrcE;
@@ -80,7 +79,7 @@ module top #(
 
     //Adder
     logic [PC_WIDTH-1:0]            PCTargetE;
-    
+
     //Data Memory
     logic[DATA_WIDTH-1:0]           ReadDataM; //Memory
     logic[DATA_WIDTH-1:0]           ReadDataW; //Writeback
@@ -100,10 +99,21 @@ module top #(
     logic [6:0]                     op;
     logic [2:0]                     funct3;
     logic                           funct7;
+    
+    // Pipeline register helpers
+    // Need to pass funct3 to execute stage for branch handling
+    logic [2:0]                     funct3E; 
+    logic [2:0]                     funct3M;
 
-    assign PCSrcE = JumpE || (BranchE && ZeroE);
-    assign PCNext = PCSrcE ? PCTargetE : PCPlus4F;
-    // NOTE: after control block changes PCSrcE, make PCSrcE = the or stuff in diag
+    // Fetch stage
+    mux_reg PC_Mux (
+        .PCPlus4F_i(PCPlus4F),
+        .PCTargetE_i(PCTargetE),
+        .ALUResultE_i(ALUResultE),
+        .PCSrcE_i(PCSrcE),
+        .JalrE_i(JumpE && ALUSrcE),
+        .PCNext_o(PCNext)
+    );
 
     pc_reg pc_reg (
         .clk_i(clk),
@@ -111,26 +121,6 @@ module top #(
         .PCNext_i(PCNext),
         .en_i(!StallF), //from Hazard Unit
         .PC_o(PCF)
-    );
-
-    hazard_unit hazard_unit(
-        .Rs1D_i(Rs1D),
-        .Rs2D_i(Rs2D),
-        .Rs1E_i(Rs1E),
-        .Rs2E_i(Rs2E),
-        .RdE_i(RdE),
-        .ResultSrcE0_i(ResultSrcE[0]),
-        .RdM_i(RdM),
-        .RegWriteM_i(RegWriteM),
-        .RdW_i(RdW),
-        .RegWriteW_i(RegWriteW),
-        .PCSrcE_i(PCSrcE),
-        .ForwardAE_o(ForwardAE),
-        .ForwardBE_o(ForwardBE),
-        .StallF_o(StallF),
-        .StallD_o(StallD),
-        .FlushD_o(FlushD),
-        .FlushE_o(FlushE)
     );
 
     instr_mem instr_mem (
@@ -158,10 +148,10 @@ module top #(
         .PCPlus4D_o(PCPlus4D)
     );
 
+    // Decode stage
     assign op = InstrD[6:0];
     assign funct3 = InstrD[14:12];
     assign funct7 = InstrD[30];
-
 
     logic [REGISTER_ADDRESS_WIDTH-1:0] Rs1D;
     logic [REGISTER_ADDRESS_WIDTH-1:0] Rs1E;
@@ -172,11 +162,9 @@ module top #(
     logic [REGISTER_ADDRESS_WIDTH-1:0] RdM;
     logic [REGISTER_ADDRESS_WIDTH-1:0] RdW;
 
-
     assign Rs1D = InstrD[19:15];
     assign Rs2D = InstrD[24:20];
-    assign RdD = InstrD[11:7];
-
+    assign RdD  = InstrD[11:7];
 
     control_unit control_unit(
         .op_i(op),
@@ -192,13 +180,11 @@ module top #(
         .Branch_o(BranchD) 
     );
 
-    //variable changing is needed
     sign_extend sign_extend (
         .imm_src_i(ImmSrcD),
-        .imm_instr_i(InstrD), //input
+        .imm_instr_i(InstrD), 
         .imm_ext_o(ImmExtD)
     );
-    
 
     regfile regfile(
         .clk_i(!clk),
@@ -206,15 +192,34 @@ module top #(
         .A2_i(Rs2D),
         .A3_i(RdW),
         .WD3_i(ResultW),
-        .WE3_i(RegWriteW),
+        .WE3_i(RegWriteW), 
         .RD1_o(RD1D),
         .RD2_o(RD2D),
         .A0_o(a0) 
     );
 
+    hazard_unit hazard_unit(
+        .Rs1D_i(Rs1D),
+        .Rs2D_i(Rs2D),
+        .Rs1E_i(Rs1E),
+        .Rs2E_i(Rs2E),
+        .RdE_i(RdE),
+        .RdM_i(RdM),
+        .RdW_i(RdW),
+        .ResultSrcE0_i(ResultSrcE[0]),
+        .RegWriteM_i(RegWriteM),
+        .RegWriteW_i(RegWriteW),
+        .PCSrcE_i(PCSrcE),
+        .ForwardAE_o(ForwardAE),
+        .ForwardBE_o(ForwardBE),
+        .StallF_o(StallF),
+        .StallD_o(StallD),
+        .FlushD_o(FlushD),
+        .FlushE_o(FlushE)
+    );
 
     pip_reg_e pip_reg_e(
-        .clk_i(clk),
+        .clk_i(clk), 
         .clr_i(FlushE),
         .RegWriteD_i(RegWriteD),
         .RegWriteE_o(RegWriteE),
@@ -230,6 +235,8 @@ module top #(
         .ALUControlE_o(ALUControlE),
         .ALUSrcD_i(ALUSrcD),
         .ALUSrcE_o(ALUSrcE),
+        .funct3D_i(funct3),
+        .funct3E_o(funct3E),
         .RD1D_i(RD1D),
         .RD1E_o(RD1E),
         .RD2D_i(RD2D),
@@ -248,10 +255,24 @@ module top #(
         .PCPlus4E_o(PCPlus4E)
     );
 
+    // Execute stage
     //3way mux so assumes ForwardAE != 11
-    assign SrcAE = ForwardAE[1] ? (ForwardAE[0] ? 'b0 : ALUResultM) : (ForwardAE[0] ? ResultW : RD1E); 
+    mux3 ForwardMuxA (
+        .in0_i(RD1E), 
+        .in1_i(ResultW), 
+        .in2_i(ALUResultM), 
+        .sel_i(ForwardAE), 
+        .out_o(SrcAE)
+    );
     //3way mux so assumes ForwardBE != 11
-    assign WriteDataE = ForwardBE[1] ? (ForwardBE[0] ? 'b0 : ALUResultM) : (ForwardBE[0] ? ResultW : RD2E);
+    mux3 ForwardMuxB (
+        .in0_i(RD2E), 
+        .in1_i(ResultW), 
+        .in2_i(ALUResultM), 
+        .sel_i(ForwardBE), 
+        .out_o(WriteDataE)
+    );
+
     assign SrcBE = ALUSrcE ? ImmExtE : WriteDataE; 
 
     ALU ALU (
@@ -262,6 +283,15 @@ module top #(
         .Zero_o(ZeroE)
     );    
 
+    branch_unit branch_unit (
+        .funct3_i(funct3E),
+        .Zero_i(ZeroE),
+        .ALUResult_i(ALUResultE),
+        .BranchTaken_o(Branch_Taken)
+    );
+
+    // PCSrcE (branch or jump)
+    assign PCSrcE = JumpE || (BranchE && Branch_Taken);
 
     pip_reg_m pip_reg_m(
         .clk_i(clk),
@@ -278,15 +308,19 @@ module top #(
         .RdE_i(RdE),
         .RdM_o(RdM),
         .PCPlus4E_i(PCPlus4E),
-        .PCPlus4M_o(PCPlus4M)
+        .PCPlus4M_o(PCPlus4M),
+        .funct3E_i(funct3E), 
+        .funct3M_o(funct3M)
     );
 
+    // Memory stage
     data_memory data_memory(
         .clk_i(clk),
         .wr_en_i(MemWriteM),
         .addr_i(ALUResultM),
         .data_i(WriteDataM),
-        .data_o(ReadDataM)
+        .data_o(ReadDataM),
+        .funct3_i(funct3M)
     );
 
     pip_reg_w pip_reg_w(
@@ -305,9 +339,13 @@ module top #(
         .PCPlus4W_o(PCPlus4W)
     );
 
-    //mux 3
-
-    assign ResultW = ResultSrcW[1] ? (ResultSrcW[0] ? 'b0 : PCPlus4W) : (ResultSrcW[0] ? ReadDataW : ALUResultW);
-
+    // Writeback stage
+    mux3 WritebackMux (
+        .in0_i(ALUResultW), 
+        .in1_i(ReadDataW), 
+        .in2_i(PCPlus4W), 
+        .sel_i(ResultSrcW), 
+        .out_o(ResultW)
+    );
 
 endmodule
