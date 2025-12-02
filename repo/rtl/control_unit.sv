@@ -12,8 +12,13 @@ module control_unit(
     output  logic           Branch_o
 );
 
+    logic       branch;
     logic [1:0] ALUOp;
+    logic       jump;
     logic       jalr;
+
+    assign Jump_o = jump || jalr;
+    assign Branch_o = branch;
 
     // Main Decoder
     always_comb begin
@@ -22,8 +27,8 @@ module control_unit(
         ALUSrc_o    = 0;
         ResultSrc_o = 0;
         ImmSrc_o    = 3'b000;
-        Branch_o      = 0;
-        Jump_o        = 0;
+        branch      = 0;
+        jump        = 0;
         jalr        = 0;
         ALUOp       = 2'b00;
 
@@ -56,7 +61,7 @@ module control_unit(
             // B-Type
             7'b1100011: begin
                 ImmSrc_o = 3'b001;
-                Branch_o   = 1;
+                branch   = 1;
                 ALUOp    = 2'b01;
             end
             // JAL
@@ -64,7 +69,7 @@ module control_unit(
                 RegWrite_o  = 1;
                 ImmSrc_o    = 3'b100;
                 ALUOp       = 2'b00; 
-                Jump_o        = 1;
+                jump        = 1;
                 ResultSrc_o = 2'b10; 
             end
             // JALR
@@ -74,7 +79,6 @@ module control_unit(
                 ImmSrc_o    = 3'b000;
                 ALUOp       = 2'b00;
                 jalr        = 1;
-                Jump_o        = 1;
                 ResultSrc_o = 2'b10;
             end
             // LUI
@@ -91,26 +95,21 @@ module control_unit(
     // ALU Decoder
     always_comb begin
         case(ALUOp)
-            2'b00: ALUControl_o = 3'b000; // ADD
-            2'b01: ALUControl_o = 3'b001; // SUB 
-            2'b11: ALUControl_o = 3'b100; // LUI 
-            // R-Type or I-Type, decided by funct3
+            2'b00: ALUControl_o = 3'b000; // ADD (LW/SW/JAL)
+            2'b01: ALUControl_o = 3'b001; // SUB (BEQ)
+            2'b11: ALUControl_o = 3'b100; // LUI
+            // R-Type or I-Type
             2'b10: begin
                 case (funct3_i)
-                    // ADD or SUB/ADDI, decided by funct7 and op_i[5]
                     3'b000: ALUControl_o = (funct7_i && op_i[5]) ? 3'b001 : 3'b000;
-                    3'b001: ALUControl_o = 3'b110; // SLL
-                    3'b010: ALUControl_o = 3'b101; // SLT
-                    3'b110: ALUControl_o = 3'b011; // OR
-                    3'b111: ALUControl_o = 3'b010; // AND
+                    3'b001: ALUControl_o = 3'b110;
+                    3'b010: ALUControl_o = 3'b101; // slt
+                    3'b110: ALUControl_o = 3'b011; // or
+                    3'b111: ALUControl_o = 3'b010; // and
                     default: ALUControl_o = 3'b000;
                 endcase
             end
             default: ALUControl_o = 3'b000;
         endcase
     end
-
-    
-    
-
 endmodule
