@@ -178,11 +178,8 @@ module top #(
     assign RdD = InstrD[11:7];
 
 
-    //Control unit needs to be modified to have JumpD, BranchD
-    //Control unit must not take input from zeroE, get rid of PCSrcE output pls
     control_unit control_unit(
         .op_i(op),
-        .Zero_i(ZeroE),
         .funct3_i(funct3),
         .funct7_i(funct7),
         .RegWrite_o(RegWriteD),
@@ -191,8 +188,8 @@ module top #(
         .ALUSrc_o(ALUSrcD),
         .ImmSrc_o(ImmSrcD),
         .ResultSrc_o(ResultSrcD),
-        .PCSrc_o(JumpD) // CHANGE CU TO OUTPUT JUMP, BRANCH STUFF INSTEAD 
-        // SHOULD ALSO HAVE A BRANCHD OUTPUT HERE
+        .Jump_o(JumpD),
+        .Branch_o(BranchD) 
     );
 
     //variable changing is needed
