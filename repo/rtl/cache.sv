@@ -1,7 +1,7 @@
 /* verilator lint_off UNUSED */
 module cache #(
     parameter   ADDRESS_WIDTH = 32,
-                DATA_WIDTH = 32, //WIDTH OF THE DATA IN MEM
+                DATA_WIDTH = 32, 
                 BYTE_WIDTH = 8,
                 SET_SIZE = 8,
                 TAG_SIZE = 22,
@@ -11,19 +11,17 @@ module cache #(
 
 )(
     input   logic                       clk_i,
+    input   logic                       rst_i,
     
-    //input   logic                       wr_en_i, --> replaced with memwritem
     input   logic                       MemWriteM_i,    //write enable
     input   logic [1:0]                 ResultSrcM_i,   //Read enable when ResultSrcM_i = 2'b01
-    input   logic [DATA_WIDTH-1:0]      wd_i,
-    
-    
-    //input  logic [2:0]                funct3_i,
-    input   logic [ADDRESS_WIDTH-1:0]   addr_i,
-    input   logic [DATA_WIDTH-1:0]      data_i,
-    output  logic [DATA_WIDTH-1:0]      data_o,
 
-    output  logic                       cache_miss
+    input   logic [ADDRESS_WIDTH-1:0]   addr_i,         //input address
+    input   logic [DATA_WIDTH-1:0]      data_i,         //input data 
+
+    output  logic [DATA_WIDTH-1:0]      data_o,         //output data
+    output  logic                       cache_miss_o,   //cache_miss = 1 if didnt find in cache
+    output  logic                       stall_o         //if cache missed we need a stall: stall_o = 1
 );
     logic wr_en;
     assign wr_en = MemWriteM_i;
@@ -40,14 +38,14 @@ module cache #(
     logic [SET_SIZE-1:0] set_addr;
     logic [TAG_SIZE-1:0] tag_addr;
 
-    assign tag_addr = addr_i[ADDRESS_WIDTH -1 : ADDRESS_WIDTH - TAG_SIZE -1];
-    assign set_addr = addr_i[SET_SIZE + BYTE_OFFSET_WIDTH -1 : BYTE_WIDTH -1];
+    assign tag_addr = addr_i[ADDRESS_WIDTH -1 : ADDRESS_WIDTH - TAG_SIZE];
+    assign set_addr = addr_i[SET_SIZE + BYTE_OFFSET_WIDTH -1 : BYTE_OFFSET_WIDTH];
 
-    logic cache_valid_0
-    logic cache_valid_1
+    logic cache_valid_0;
+    logic cache_valid_1;
 
-    logic [WAY_SIZE-1:0] cache_way_0;
-    logic [WAY_SIZE-1:0] cache_way_1;
+    logic [WAY_WIDTH-1:0] cache_way_0;
+    logic [WAY_WIDTH-1:0] cache_way_1;
     
     logic [TAG_SIZE-1:0] cache_tag_0;
     logic [TAG_SIZE-1:0] cache_tag_1;
@@ -57,16 +55,18 @@ module cache #(
     
     
     logic [CACHE_WIDTH-1:0] cache_set;
+    logic lru_bit;
 
     assign cache_set = cache_array[set_addr];
     assign cache_way_0 = cache_set[WAY_WIDTH-1:0];
-    assign cache_way_1 = cache_set[CACHE_WIDTH - 2: CACHE_WIDTH - 1 - WAY_WIDTH -1];
+    assign cache_way_1 = cache_set[2*WAY_WIDTH-1:WAY_WIDTH];
+    assign lru_bit = cache_set[CACHE_WIDTH-1];
 
     assign cache_valid_0 = cache_way_0[WAY_WIDTH-1];
     assign cache_valid_1 = cache_way_1[WAY_WIDTH-1];
 
-    assign cache_tag_0 = cache_way_0[WAY_WIDTH-2: WAY_WIDTH - 2 -TAG_SIZE];
-    assign cache_tag_1 = cache_way_1[WAY_WIDTH-2: WAY_WIDTH - 2 -TAG_SIZE];
+    assign cache_tag_0 = cache_way_0[WAY_WIDTH-2:DATA_WIDTH];
+    assign cache_tag_1 = cache_way_1[WAY_WIDTH-2:DATA_WIDTH];
 
     assign cache_data_0 = cache_way_0[DATA_WIDTH-1:0];
     assign cache_data_1 = cache_way_1[DATA_WIDTH-1:0];
@@ -74,64 +74,57 @@ module cache #(
     logic tag_0_hit;
     logic tag_1_hit;
     logic cache_miss;
+    logic cache_hit;
 
-    if (cache_en) begin
-        
-        if (wr_en) begin
-
-        end
-
-
-        if (rd_en) begin
-            
-            tag_0_hit = (tag_addr == cache_tag_0 && cache_valid_0);
-            tag_1_hit = (tag_addr == cache_tag_1 && cache_valid_1);
-            if (tag_0_hit || tag_1_hit) begin
-                //hit here
-                cache_miss = 0;
-                data_o = tag_1_hit ? cache_data_1 : cache_data_0;
-            else begin
-                cache_miss = 1;
-
-
-             begin
-            
-            end
-
-                
-            end
-
-        end
-    end
-
-    
-    // memory read
+    //hit or miss detection
     always_comb begin
-        // funct3 010: load word
-        // funct3 000/100: byte
-        if (funct3_i == 3'b010) begin // load word
-            data_o = {
-                ram_array[addr_i[16:0] + 3], 
-                ram_array[addr_i[16:0] + 2], 
-                ram_array[addr_i[16:0] + 1], 
-                ram_array[addr_i[16:0]]
-            };
-        end else begin // load byte (zero extended)
-            data_o = {24'b0, ram_array[addr_i[16:0]]};
+        tag_0_hit = (tag_addr == cache_tag_0) && cache_valid_0;
+        tag_1_hit = (tag_addr == cache_tag_1) && cache_valid_1;
+        cache_hit = (tag_0_hit || tag_1_hit) && cache_en;
+        cache_miss = cache_en && !cache_hit;
+    end
+
+    //output data on cache hit
+    always_comb begin
+        if (cache_hit) begin
+            data_o = tag_1_hit ? cache_data_1 : cache_data_0;
+        end else begin
+            data_o = 32'b0; //default val on miss
         end
     end
 
-    // memory write
-    always @(posedge clk_i) begin
-        if (wr_en_i) begin
-            if (funct3_i == 3'b010) begin // store word
-                ram_array[addr_i[16:0]]     <= data_i[7:0];
-                ram_array[addr_i[16:0] + 1] <= data_i[15:8];
-                ram_array[addr_i[16:0] + 2] <= data_i[23:16];
-                ram_array[addr_i[16:0] + 3] <= data_i[31:24];
-            end else begin // store byte
-                ram_array[addr_i[16:0]] <= data_i[7:0];
+    //stall if cache miss
+    assign stall_o = cache_miss;
+    assign cache_miss_o = cache_miss;
+
+    //cache update logic
+    always_ff @(posedge clk_i) begin
+        if (rst_i) begin
+            //on reset set everything to 0
+            for (int i = 0; i < 2**SET_SIZE; i++) begin
+                cache_array[i] <= '0;
             end
+        end else if (cache_en) begin
+            if (wr_en && cache_hit) begin
+                //write hit update data and set LRU (already set data out)
+                if (tag_0_hit) begin
+                    cache_array[set_addr][DATA_WIDTH-1:0] <= data_i;
+                    cache_array[set_addr][CACHE_WIDTH-1] <= 1'b1;
+                end else if (tag_1_hit) begin
+                    cache_array[set_addr][WAY_WIDTH + DATA_WIDTH - 1 : WAY_WIDTH] <= data_i;
+                    cache_array[set_addr][CACHE_WIDTH-1] <= 1'b0;
+                end
+            end else if (rd_en && cache_hit) begin
+                //read data set LRU (already set data out)
+                if (tag_0_hit) begin
+                    cache_array[set_addr][CACHE_WIDTH-1] <= 1'b1;
+                end else if (tag_1_hit) begin
+                    cache_array[set_addr][CACHE_WIDTH-1] <= 1'b0;
+                end
+            end
+            // on cache miss, the data will be loaded from main memory
+            // this part will be implemented when connecting to data_memory
+            // for now, the stall signal will tell the pipeline to wait
         end
     end
 
