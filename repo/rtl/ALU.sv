@@ -10,23 +10,38 @@ module ALU #(
 
     always_comb begin
         ALUResult_o = {DATA_WIDTH{1'b0}};
+        Zero_o = 1'b0;
         case (ALUControl_i)
-            3'b000: ALUResult_o = SrcA_i + SrcB_i; // ADD
-            3'b001: ALUResult_o = SrcA_i - SrcB_i; // SUB
-            3'b010: ALUResult_o = SrcA_i & SrcB_i; // AND
-            3'b011: ALUResult_o = SrcA_i | SrcB_i; // OR            
-            3'b100: ALUResult_o = SrcB_i;// LUI
-            3'b110: ALUResult_o = SrcA_i << SrcB_i[4:0]; // SLLI
-            3'b101: begin // SLT
-                if ($signed(SrcA_i) < $signed(SrcB_i)) 
-                    ALUResult_o = {{DATA_WIDTH-1{1'b0}}, 1'b1};
-                else 
-                    ALUResult_o = {DATA_WIDTH{1'b0}};
+
+            3'b000: begin
+                ALUResult_o = SrcA_i + SrcB_i; // ADD
             end
-            default: ALUResult_o = {DATA_WIDTH{1'b0}};
+            3'b001: begin 
+                ALUResult_o = SrcA_i - SrcB_i; // SUB
+                Zero_o = (SrcA_i == SrcB_i);
+            end
+            3'b010: begin
+                ALUResult_o = SrcA_i & SrcB_i; // AND
+            end
+            3'b011: begin
+                ALUResult_o = SrcA_i | SrcB_i; // OR  
+            end          
+            3'b100: begin
+                ALUResult_o = SrcB_i;// LUI
+            end
+            3'b110: begin
+                ALUResult_o = SrcA_i << SrcB_i[4:0]; // SLL
+            end
+            3'b101: begin // SLT
+                ALUResult_o = ($signed(SrcA_i) < $signed(SrcB_i)) ? 32'd1 : 32'd0;
+                Zero_o      = ($signed(SrcA_i) < $signed(SrcB_i));  
+            end
+            default: begin
+                ALUResult_o = 0;
+                Zero_o = 0;
+            end
+
         endcase
     end
-
-    assign Zero_o = (ALUResult_o == {DATA_WIDTH{1'b0}});
 
 endmodule
