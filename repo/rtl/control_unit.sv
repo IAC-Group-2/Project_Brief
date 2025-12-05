@@ -45,6 +45,12 @@ module control_unit(
                 RegWrite_o = 1;
                 ALUSrc_o = 1;
                 ALUOp = 2'b10;
+                
+                if (funct3_i == 3'b001 || funct3_i == 3'b101)
+                    ImmSrc_o = 3'b101; //shamt
+                else 
+                    ImmSrc_o = 3'b000; // normal itype
+                    
             end
             // I-Type (Load)
             7'b0000011: begin
