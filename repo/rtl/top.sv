@@ -6,7 +6,9 @@ module top #(
 ) (
     input   logic                   clk,
     input   logic                   rst,
-    input   logic                   trigger, // Removed to prevent warnings
+    /* verilator lint_off UNUSED */
+    input   logic                   trigger,
+    /* verilator lint_off UNUSED */
     output  logic [DATA_WIDTH-1:0]  a0
 );
 
@@ -46,8 +48,8 @@ module top #(
     logic                           JumpE;
     logic                           BranchD;
     logic                           BranchE;
-    logic [2:0]                     ALUControlD;
-    logic [2:0]                     ALUControlE;
+    logic [3:0]                     ALUControlD;
+    logic [3:0]                     ALUControlE;
     logic                           ALUSrcD;
     logic                           ALUSrcE;
     logic [2:0]                     ImmSrcD;
@@ -63,7 +65,6 @@ module top #(
     //Extend Output
     logic[DATA_WIDTH-1:0]           ImmExtD;
     logic[DATA_WIDTH-1:0]           ImmExtE;
-
 
     //ALU Input Wires
     logic[DATA_WIDTH-1:0]           WriteDataE;
@@ -100,10 +101,14 @@ module top #(
     logic [2:0]                     funct3;
     logic                           funct7;
     
-    // Pipeline register helpers
     // Need to pass funct3 to execute stage for branch handling
     logic [2:0]                     funct3E; 
     logic [2:0]                     funct3M;
+    
+    // AUIPC
+    logic                            ALUSrcAD;
+    logic                            ALUSrcAE;
+    logic [DATA_WIDTH-1:0]           SrcAE_final;
 
     // Fetch stage
     mux_reg PC_Mux (
@@ -174,6 +179,7 @@ module top #(
         .MemWrite_o(MemWriteD),
         .ALUControl_o(ALUControlD),
         .ALUSrc_o(ALUSrcD),
+        .ALUSrcA_o(ALUSrcAD),
         .ImmSrc_o(ImmSrcD),
         .ResultSrc_o(ResultSrcD),
         .Jump_o(JumpD),
@@ -235,6 +241,8 @@ module top #(
         .ALUControlE_o(ALUControlE),
         .ALUSrcD_i(ALUSrcD),
         .ALUSrcE_o(ALUSrcE),
+        .ALUSrcAD_i(ALUSrcAD),
+        .ALUSrcAE_o(ALUSrcAE),
         .funct3D_i(funct3),
         .funct3E_o(funct3E),
         .RD1D_i(RD1D),
@@ -273,10 +281,14 @@ module top #(
         .out_o(WriteDataE)
     );
 
-    assign SrcBE = ALUSrcE ? ImmExtE : WriteDataE; 
+    // ALU SrcA Mux - with AUIPC
+    assign SrcAE_final = ALUSrcAE ? PCE : SrcAE;
+
+    // ALU mux SrcB 
+    assign SrcBE = ALUSrcE ? ImmExtE : WriteDataE;
 
     ALU ALU (
-        .SrcA_i(SrcAE),
+        .SrcA_i(SrcAE_final),
         .SrcB_i(SrcBE),
         .ALUControl_i(ALUControlE),
         .ALUResult_o(ALUResultE),

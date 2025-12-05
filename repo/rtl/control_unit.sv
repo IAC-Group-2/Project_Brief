@@ -4,8 +4,9 @@ module control_unit(
     input   logic           funct7_i,
     output  logic           RegWrite_o,
     output  logic           MemWrite_o,
-    output  logic   [2:0]   ALUControl_o,
+    output  logic   [3:0]   ALUControl_o, // 4 bit for full ISA
     output  logic           ALUSrc_o,
+    output  logic           ALUSrcA_o,    // AUIPC flag
     output  logic   [2:0]   ImmSrc_o,
     output  logic   [1:0]   ResultSrc_o,
     output  logic           Jump_o,
@@ -22,94 +23,107 @@ module control_unit(
 
     // Main Decoder
     always_comb begin
-        RegWrite_o  = 0;
-        MemWrite_o  = 0;
-        ALUSrc_o    = 0;
+        RegWrite_o = 0;
+        MemWrite_o = 0;
+        ALUSrc_o = 0;
+        ALUSrcA_o = 0;
         ResultSrc_o = 0;
-        ImmSrc_o    = 3'b000;
-        branch      = 0;
-        jump        = 0;
-        jalr        = 0;
-        ALUOp       = 2'b00;
+        ImmSrc_o = 3'b000;
+        branch = 0;
+        jump = 0;
+        jalr = 0;
+        ALUOp = 2'b00;
 
         case (op_i) 
             // R-Type
             7'b0110011: begin
                 RegWrite_o = 1;
-                ALUOp      = 2'b10;
+                ALUOp = 2'b10;
             end
             // I-Type (Arithmetic)
             7'b0010011: begin
                 RegWrite_o = 1;
-                ALUSrc_o   = 1;
-                ALUOp      = 2'b10;
+                ALUSrc_o = 1;
+                ALUOp = 2'b10;
             end
             // I-Type (Load)
             7'b0000011: begin
-                RegWrite_o  = 1;
-                ALUSrc_o    = 1;
+                RegWrite_o = 1;
+                ALUSrc_o = 1;
                 ResultSrc_o = 1;  
-                ALUOp       = 2'b00;
+                ALUOp = 2'b00;
             end
             // S-Type
             7'b0100011: begin
                 MemWrite_o = 1;
-                ALUSrc_o   = 1;
-                ImmSrc_o   = 3'b010; 
-                ALUOp      = 2'b00;
+                ALUSrc_o = 1;
+                ImmSrc_o = 3'b010; 
+                ALUOp = 2'b00;
             end
             // B-Type
             7'b1100011: begin
                 ImmSrc_o = 3'b001;
-                branch   = 1;
-                ALUOp    = 2'b01;
+                branch = 1;
+                ALUOp = 2'b01;
             end
             // JAL
             7'b1101111: begin
-                RegWrite_o  = 1;
-                ImmSrc_o    = 3'b100;
-                ALUOp       = 2'b00; 
-                jump        = 1;
-                ResultSrc_o = 2'b10; 
+                RegWrite_o = 1;
+                ImmSrc_o = 3'b100;
+                ALUOp = 2'b00; 
+                jump = 1;
+                ResultSrc_o = 2'b10;
             end
             // JALR
             7'b1100111: begin
-                RegWrite_o  = 1;
-                ALUSrc_o    = 1;
-                ImmSrc_o    = 3'b000;
-                ALUOp       = 2'b00;
-                jalr        = 1;
+                RegWrite_o = 1;
+                ALUSrc_o = 1;
+                ImmSrc_o = 3'b000;
+                ALUOp = 2'b00;
+                jalr = 1;
                 ResultSrc_o = 2'b10;
             end
             // LUI
             7'b0110111: begin
                 RegWrite_o = 1;
-                ALUSrc_o   = 1;
-                ImmSrc_o   = 3'b011;
-                ALUOp      = 2'b11; 
+                ALUSrc_o = 1;
+                ImmSrc_o = 3'b011;
+                ALUOp = 2'b11; 
+            end
+            
+            // AUIPC
+            7'b0010111: begin
+                RegWrite_o = 1;
+                ALUSrc_o = 1;
+                ALUSrcA_o = 1;
+                ImmSrc_o = 3'b011;
+                ALUOp = 2'b00;
             end
             default: ;
         endcase
     end
 
-    // ALU Decoder
     always_comb begin
         case(ALUOp)
-            2'b00: ALUControl_o = 3'b000; // ADD (LW/SW/JAL)
-            2'b01: ALUControl_o = 3'b001; // SUB (BEQ)
-            2'b11: ALUControl_o = 3'b100; // LUI
+            2'b00: ALUControl_o = 4'b0000; // ADD (LW/SW/JAL/AUIPC)
+            2'b01: ALUControl_o = 4'b0001; // SUB (BEQ)
+            2'b11: ALUControl_o = 4'b1111; // LUI
+            
             // R-Type or I-Type
             2'b10: begin
                 case (funct3_i)
-                    3'b000: ALUControl_o = (funct7_i && op_i[5]) ? 3'b001 : 3'b000;
-                    3'b001: ALUControl_o = 3'b110;
-                    3'b010: ALUControl_o = 3'b101; // slt
-                    3'b110: ALUControl_o = 3'b011; // or
-                    3'b111: ALUControl_o = 3'b010; // and
-                    default: ALUControl_o = 3'b000;
+                    3'b000: ALUControl_o = (funct7_i && op_i[5]) ? 4'b0001 : 4'b0000; // SUB/ADD
+                    3'b001: ALUControl_o = 4'b0101; // SLL
+                    3'b010: ALUControl_o = 4'b1000; // SLT
+                    3'b011: ALUControl_o = 4'b1001; // SLTU
+                    3'b100: ALUControl_o = 4'b0100; // XOR
+                    3'b101: ALUControl_o = (funct7_i) ? 4'b0111 : 4'b0110; // SRA / SRL
+                    3'b110: ALUControl_o = 4'b0011; // OR
+                    3'b111: ALUControl_o = 4'b0010; // AND
+                    default: ALUControl_o = 4'b0000;
                 endcase
             end
-            default: ALUControl_o = 3'b000;
+            default: ALUControl_o = 4'b0000;
         endcase
     end
 endmodule

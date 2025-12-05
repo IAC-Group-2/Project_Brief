@@ -21,8 +21,11 @@ module pip_reg_e #( //Decode to execute stage
     input   logic                           BranchD_i, //Decode
     output  logic                           BranchE_o, //Execute
 
-    input   logic [2:0]                     ALUControlD_i, //Decode
-    output  logic [2:0]                     ALUControlE_o, //Execute
+    input   logic [3:0]                     ALUControlD_i, //Decode
+    output  logic [3:0]                     ALUControlE_o, //Execute
+
+    input   logic                           ALUSrcAD_i, // Decode
+    output  logic                           ALUSrcAE_o, // Execute
 
     input   logic [2:0]                     funct3D_i, //Decode
     output  logic [2:0]                     funct3E_o, //Execute
@@ -65,6 +68,7 @@ always_ff @(posedge clk_i) begin
         BranchE_o       <= BranchD_i;
         ALUControlE_o   <= ALUControlD_i;
         ALUSrcE_o       <= ALUSrcD_i;
+        ALUSrcAE_o      <= ALUSrcAD_i;
         funct3E_o       <= funct3D_i;
         RD1E_o          <= RD1D_i;
         RD2E_o          <= RD2D_i;
@@ -83,6 +87,7 @@ always_ff @(posedge clk_i) begin
         BranchE_o       <= 'b0;
         ALUControlE_o   <= 'b0;
         ALUSrcE_o       <= 'b0;
+        ALUSrcAE_o      <= 'b0;
         funct3E_o       <= 'b0;
         RD1E_o          <= 'b0;
         RD2E_o          <= 'b0;
