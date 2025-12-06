@@ -204,6 +204,11 @@ module cache #(
                 mem_addr_o = {addr_i[ADDRESS_WIDTH-1:2], 2'b00};
                 mem_wr_en_o = 1'b0;
             end
+            UPDATE: begin
+                //keep word aligned address so mem_rd_data_i stays valid
+                mem_addr_o = {addr_i[ADDRESS_WIDTH-1:2], 2'b00};
+                mem_wr_en_o = 1'b0;
+            end
             default: begin
                 mem_addr_o = addr_i;
                 mem_wr_en_o = 1'b0;
