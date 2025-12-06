@@ -332,17 +332,21 @@ module top #(
     );
 
     // Memory stage
+    logic [2:0] CacheFunct3; //funct3 passed through cache to memory
+    
     cache cache(
         .clk_i(clk),
         .rst_i(rst),
         .MemWriteM_i(MemWriteM),
         .ResultSrcM_i(ResultSrcM),
+        .funct3_i(funct3M),
         .addr_i(ALUResultM),
         .data_i(WriteDataM),
         .mem_rd_data_i(MemRdData),
         .mem_addr_o(CacheMemAddr),
         .mem_wr_en_o(CacheMemWrEn),
         .mem_wr_data_o(CacheMemWrData),
+        .funct3_o(CacheFunct3),
         .data_o(ReadDataM),
         .cache_miss_o(CacheMiss),
         .stall_o(CacheStall)
@@ -354,7 +358,7 @@ module top #(
         .addr_i(CacheMemAddr),
         .data_i(CacheMemWrData),
         .data_o(MemRdData),
-        .funct3_i(funct3M)
+        .funct3_i(CacheFunct3)
     );
 
     pip_reg_w pip_reg_w(
