@@ -50,8 +50,8 @@ module cache #(
     typedef enum {IDLE, WRITEBACK, FETCH, UPDATE} my_state;
     my_state current_state, next_state;
     
-    //pass funct3 to memory and change on fetch or writeback state
-    assign funct3_o = (current_state == FETCH || current_state == WRITEBACK) ? 3'b010 : funct3_i;
+    //pass funct3 to memory and force word access on fill/writeback/update
+    assign funct3_o = (current_state == FETCH || current_state == WRITEBACK || current_state == UPDATE) ? 3'b010 : funct3_i;
     
     // U | V1 | Dirty1 | Tag1(22 bits) | Data 1 (32 bits) | V2 | Dirty2 | Tag2 (22 bits) | Data 2 (32 bits)
     logic [CACHE_WIDTH-1:0] cache_array [2**SET_SIZE-1:0];
