@@ -4,6 +4,7 @@ module pip_reg_w #(
     REGISTER_ADDRESS_WIDTH = 5
 )(
     input   logic                           clk_i,
+    input   logic                           en_i,
 
     input   logic                           RegWriteM_i, //Memory
     output  logic                           RegWriteW_o, //Writeback
@@ -25,11 +26,14 @@ module pip_reg_w #(
 );
 
 always_ff @(posedge clk_i) begin
-    RegWriteW_o     <= RegWriteM_i;
-    ResultSrcW_o    <= ResultSrcM_i;
-    ALUResultW_o    <= ALUResultM_i;
-    ReadDataW_o     <= ReadDataM_i;
-    RdW_o           <= RdM_i;
-    PCPlus4W_o      <= PCPlus4M_i;
+    if (en_i) begin
+        RegWriteW_o     <= RegWriteM_i;
+        ResultSrcW_o    <= ResultSrcM_i;
+        ALUResultW_o    <= ALUResultM_i;
+        ReadDataW_o     <= ReadDataM_i;
+        RdW_o           <= RdM_i;
+        PCPlus4W_o      <= PCPlus4M_i;
+    end
+
 end
 endmodule

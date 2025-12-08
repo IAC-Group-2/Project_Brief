@@ -5,6 +5,7 @@ module pip_reg_e #( //Decode to execute stage
 )(
     input   logic                           clk_i,
     input   logic                           clr_i,
+    input   logic                           en_i,
 
     input   logic                           RegWriteD_i, //Decode
     output  logic                           RegWriteE_o, //Execute
@@ -57,25 +58,7 @@ module pip_reg_e #( //Decode to execute stage
 );
 
 always_ff @(posedge clk_i) begin
-    if (!clr_i) begin  // Normal operation: pass data through
-        RegWriteE_o     <= RegWriteD_i;
-        ResultSrcE_o    <= ResultSrcD_i;
-        MemWriteE_o     <= MemWriteD_i;
-        JumpE_o         <= JumpD_i;
-        BranchE_o       <= BranchD_i;
-        ALUControlE_o   <= ALUControlD_i;
-        ALUSrcE_o       <= ALUSrcD_i;
-        funct3E_o       <= funct3D_i;
-        RD1E_o          <= RD1D_i;
-        RD2E_o          <= RD2D_i;
-        PCE_o           <= PCD_i;
-        Rs1E_o          <= Rs1D_i;
-        Rs2E_o          <= Rs2D_i;
-        RdE_o           <= RdD_i;
-        ImmExtE_o       <= ImmExtD_i;
-        PCPlus4E_o      <= PCPlus4D_i;
-    end
-    else begin//flush logic ... tbc
+    if (clr_i) begin //flush logic
         RegWriteE_o     <= 'b0;
         ResultSrcE_o    <= 'b0;
         MemWriteE_o     <= 'b0;
@@ -93,5 +76,24 @@ always_ff @(posedge clk_i) begin
         ImmExtE_o       <= 'b0;
         PCPlus4E_o      <= 'b0;
     end
+    else if (en_i) begin  // Normal operation: pass data through
+        RegWriteE_o     <= RegWriteD_i;
+        ResultSrcE_o    <= ResultSrcD_i;
+        MemWriteE_o     <= MemWriteD_i;
+        JumpE_o         <= JumpD_i;
+        BranchE_o       <= BranchD_i;
+        ALUControlE_o   <= ALUControlD_i;
+        ALUSrcE_o       <= ALUSrcD_i;
+        funct3E_o       <= funct3D_i;
+        RD1E_o          <= RD1D_i;
+        RD2E_o          <= RD2D_i;
+        PCE_o           <= PCD_i;
+        Rs1E_o          <= Rs1D_i;
+        Rs2E_o          <= Rs2D_i;
+        RdE_o           <= RdD_i;
+        ImmExtE_o       <= ImmExtD_i;
+        PCPlus4E_o      <= PCPlus4D_i;
+    end
+
 end
 endmodule

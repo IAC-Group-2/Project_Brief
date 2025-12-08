@@ -16,12 +16,16 @@ module hazard_unit#(
     input   logic                                   RegWriteW_i,
 
     input   logic                                   PCSrcE_i,
+    input   logic                                   CacheStall_i,
 
     output  logic [1:0]                             ForwardAE_o,
     output  logic [1:0]                             ForwardBE_o,
 
     output  logic                                   StallF_o,
     output  logic                                   StallD_o,
+    output  logic                                   StallE_o,
+    output  logic                                   StallM_o,
+    output  logic                                   StallW_o,
     output  logic                                   FlushD_o,
     output  logic                                   FlushE_o
 );
@@ -31,6 +35,9 @@ module hazard_unit#(
         ForwardBE_o = 2'b00;
         StallF_o    = 1'b0;
         StallD_o    = 1'b0;
+        StallE_o    = 1'b0;
+        StallM_o    = 1'b0;
+        StallW_o    = 1'b0;
         FlushD_o    = 1'b0;
         FlushE_o    = 1'b0;
         lwStall     = 1'b0;
@@ -57,13 +64,24 @@ module hazard_unit#(
 
         lwStall = ResultSrcE0_i && ((Rs1D_i == RdE_i) || (Rs2D_i == RdE_i)); //logic to determine if stall is needed
 
-        //Stall logic (Stall for one clock cycle at a time)
-        StallF_o = lwStall;
-        StallD_o = lwStall;
+        //Stall logic:
+        //stall on regular stall or cache stall
+        StallF_o = lwStall || CacheStall_i;
+        StallD_o = lwStall || CacheStall_i;
+        //freeze on cache stall only
+        StallE_o = CacheStall_i;  
+        StallM_o = CacheStall_i;  
+        StallW_o = CacheStall_i;  
 
-        //Flush logic
-        FlushD_o = PCSrcE_i;
-        FlushE_o = lwStall || PCSrcE_i;
+        //Flush logic 
+        if (!CacheStall_i) begin // don't flush on cache stall
+            FlushD_o = PCSrcE_i;
+            FlushE_o = (lwStall || PCSrcE_i);
+        end
+        else begin
+            FlushD_o = 'b0;
+            FlushE_o = 'b0;
+        end
     end
 
 endmodule
