@@ -17,7 +17,8 @@ protected:
     {
         top->funct3_i = 0;
         top->Zero_i = 0;
-        top->ALUResult_i = 0;
+        top->SrcA_i = 0;
+        top->SrcB_i = 0;
         // output: BranchTaken_o
     }
 };
@@ -44,7 +45,8 @@ TEST_F(TB_NAME, BneTaken)
 TEST_F(TB_NAME, BltTaken)
 {
     top->funct3_i = 0b100;
-    top->ALUResult_i = 0x80000000; // negative
+    top->SrcA_i = 0x80000000; // negative
+    top->SrcB_i = 0x00000000;
     top->eval();
     EXPECT_EQ(top->BranchTaken_o, 1);
 }
@@ -53,7 +55,8 @@ TEST_F(TB_NAME, BltTaken)
 TEST_F(TB_NAME, BgeTaken)
 {
     top->funct3_i = 0b101;
-    top->ALUResult_i = 0x00000001;
+    top->SrcA_i = 0x00000001;
+    top->SrcB_i = 0x00000000;
     top->eval();
     EXPECT_EQ(top->BranchTaken_o, 1);
 }
@@ -63,7 +66,8 @@ TEST_F(TB_NAME, DefaultNotTaken)
 {
     top->funct3_i = 0b111;
     top->Zero_i = 0;
-    top->ALUResult_i = 0;
+    top->SrcA_i = 0x00000000;
+    top->SrcB_i = 0x00000001;
     top->eval();
     EXPECT_EQ(top->BranchTaken_o, 0);
 }
