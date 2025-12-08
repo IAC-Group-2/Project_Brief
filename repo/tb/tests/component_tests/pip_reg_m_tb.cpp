@@ -37,6 +37,7 @@ TEST_F(TB_NAME, PipelineMTest)
     top->WriteDataE_i = 0xCCCCDDDD;
     top->RdE_i = 0x1A;
     top->PCPlus4E_i = 0x20;
+    top->en_i = 1;
 
     top->clk_i = 0; top->eval();
     top->clk_i = 1; top->eval();

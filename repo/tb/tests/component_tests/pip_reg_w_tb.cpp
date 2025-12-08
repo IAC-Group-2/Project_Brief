@@ -33,6 +33,7 @@ TEST_F(TB_NAME, PipelineWTest)
     top->ReadDataM_i = 0xA5A5A5A5;
     top->RdM_i = 0x0F;
     top->PCPlus4M_i = 0x40;
+    top->en_i = 1;
 
     top->clk_i = 0; top->eval();
     top->clk_i = 1; top->eval();
