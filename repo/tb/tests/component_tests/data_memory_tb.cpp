@@ -52,7 +52,7 @@ TEST_F(TB_NAME, StoreLoadByte)
     top->clk_i = 1; top->eval();
 
     top->wr_en_i = 0;
-    top->funct3_i = 0b000;
+    top->funct3_i = 0b100; 
     top->eval();
     EXPECT_EQ(top->data_o, 0xAAu);
 }
