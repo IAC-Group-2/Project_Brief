@@ -119,6 +119,39 @@ TEST_F(CpuTestbench, Program8CpyReplaceTest)
     }
 }
 
+TEST_F(CpuTestbench, TestITypeALU)
+{
+    setupTest("9_itype_alu");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 16);
+}
+
+TEST_F(CpuTestbench, TestLoadVariants)
+{
+    setupTest("10_itype_load");
+    setData("reference/data_load.mem");
+    initSimulation();
+    runSimulation(CYCLES * 2);
+}
+
+
+TEST_F(CpuTestbench, TestJALR)
+{
+    setupTest("11_jalr");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 99);
+}
+
+TEST_F(CpuTestbench, TestBranchInstructions)
+{
+    setupTest("12_branch_test");
+    initSimulation();
+    runSimulation(2000);
+    EXPECT_EQ(top_->a0, 100);
+}
+
 
 int main(int argc, char **argv)
 {

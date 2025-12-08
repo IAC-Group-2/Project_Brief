@@ -45,6 +45,13 @@ always_comb begin
             imm_instr_i[30:21],
             1'b0         
         };
+
+        // I-type shift
+        3'b101: imm_ext_o = {
+            27'b0,
+            imm_instr_i[24:20]
+        };
+        
         default: imm_ext_o = {DATA_WIDTH{1'b0}};
     endcase
 end
