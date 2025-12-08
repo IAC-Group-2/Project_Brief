@@ -47,14 +47,14 @@ module top #(
     logic                           BranchD;
     logic                           BranchE;
     logic                           Branch_Taken;
-    logic [2:0]                     ALUControlD;
-    logic [2:0]                     ALUControlE;
+    logic [3:0]                     ALUControlD;
+    logic [3:0]                     ALUControlE;
     logic                           ALUSrcD;
     logic                           ALUSrcE;
+    logic                           ALUSrcAD;
+    logic                           ALUSrcAE;
+    logic [DATA_WIDTH-1:0]          SrcAE_final;
     logic [2:0]                     ImmSrcD;
-
-
-    //Register File Outputs
     logic[DATA_WIDTH-1:0]           RD1D;
     logic[DATA_WIDTH-1:0]           RD1E;
     logic[DATA_WIDTH-1:0]           RD2D;
@@ -84,19 +84,14 @@ module top #(
     //Data Memory
     logic[DATA_WIDTH-1:0]           ReadDataM; //Memory
     logic[DATA_WIDTH-1:0]           ReadDataW; //Writeback
-
-    //Cache to memory interface
-    logic[DATA_WIDTH-1:0]           MemRdData;    //memory output
-    logic[DATA_WIDTH-1:0]           CacheMemAddr;   //cache to memory address
-    logic                           CacheMemWrEn;   //cache to memory write enable
+    logic[DATA_WIDTH-1:0]           MemRdData; //memory output 
+    logic[DATA_WIDTH-1:0]           CacheMemAddr; //cache to memory address
+    logic                           CacheMemWrEn; //cache to memory write enable
     logic[DATA_WIDTH-1:0]           CacheMemWrData; //cache to memory write data
-    logic                           CacheStall;     //cache stall signal
-    logic                           CacheMiss;      //cache miss signal
-
-    //Mux 2
+    logic                           CacheStall; //cache stall signal
+    logic                           CacheMiss; //cache miss signal
+    logic [2:0]                     CacheFunct3;
     logic[DATA_WIDTH-1:0]           ResultW;
-
-    //Hazard Unit
     logic                           StallF;
     logic                           StallD;
     logic                           StallE;
@@ -116,8 +111,15 @@ module top #(
     // Need to pass funct3 to execute stage for branch handling
     logic [2:0]                     funct3E; 
     logic [2:0]                     funct3M;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs1D;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs1E;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs2D;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs2E;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] RdD;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] RdE;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] RdM;
+    logic [REGISTER_ADDRESS_WIDTH-1:0] RdW;
 
-    // Fetch stage
     mux_reg PC_Mux (
         .PCPlus4F_i(PCPlus4F),
         .PCTargetE_i(PCTargetE),
@@ -131,7 +133,7 @@ module top #(
         .clk_i(clk),
         .rst_i(rst),
         .PCNext_i(PCNext),
-        .en_i(!StallF), //from Hazard Unit
+        .en_i(!StallF),
         .PC_o(PCF)
     );
 
@@ -164,16 +166,6 @@ module top #(
     assign op = InstrD[6:0];
     assign funct3 = InstrD[14:12];
     assign funct7 = InstrD[30];
-
-    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs1D;
-    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs1E;
-    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs2D;
-    logic [REGISTER_ADDRESS_WIDTH-1:0] Rs2E;
-    logic [REGISTER_ADDRESS_WIDTH-1:0] RdD;
-    logic [REGISTER_ADDRESS_WIDTH-1:0] RdE;
-    logic [REGISTER_ADDRESS_WIDTH-1:0] RdM;
-    logic [REGISTER_ADDRESS_WIDTH-1:0] RdW;
-
     assign Rs1D = InstrD[19:15];
     assign Rs2D = InstrD[24:20];
     assign RdD  = InstrD[11:7];
@@ -186,6 +178,7 @@ module top #(
         .MemWrite_o(MemWriteD),
         .ALUControl_o(ALUControlD),
         .ALUSrc_o(ALUSrcD),
+        .ALUSrcA_o(ALUSrcAD),
         .ImmSrc_o(ImmSrcD),
         .ResultSrc_o(ResultSrcD),
         .Jump_o(JumpD),
@@ -252,6 +245,8 @@ module top #(
         .ALUControlE_o(ALUControlE),
         .ALUSrcD_i(ALUSrcD),
         .ALUSrcE_o(ALUSrcE),
+        .ALUSrcAD_i(ALUSrcAD),
+        .ALUSrcAE_o(ALUSrcAE),
         .funct3D_i(funct3),
         .funct3E_o(funct3E),
         .RD1D_i(RD1D),
@@ -290,10 +285,11 @@ module top #(
         .out_o(WriteDataE)
     );
 
+    assign SrcAE_final = ALUSrcAE ? PCE : SrcAE;
     assign SrcBE = ALUSrcE ? ImmExtE : WriteDataE; 
 
     ALU ALU (
-        .SrcA_i(SrcAE),
+        .SrcA_i(SrcAE_final),
         .SrcB_i(SrcBE),
         .ALUControl_i(ALUControlE),
         .ALUResult_o(ALUResultE),
@@ -331,9 +327,6 @@ module top #(
         .funct3M_o(funct3M)
     );
 
-    // Memory stage
-    logic [2:0] CacheFunct3; //funct3 passed through cache to memory
-    
     cache cache(
         .clk_i(clk),
         .rst_i(rst),
