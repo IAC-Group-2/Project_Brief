@@ -25,7 +25,7 @@ protected:
 // ADD
 TEST_F(TB_NAME, AddWorksTest)
 {
-    top->ALUControl_i = 0b000;
+    top->ALUControl_i = 0b0000; // ADD
     top->SrcA_i = 10;
     top->SrcB_i = 20;
 
@@ -38,7 +38,7 @@ TEST_F(TB_NAME, AddWorksTest)
 // SUB
 TEST_F(TB_NAME, SubWorksTest)
 {
-    top->ALUControl_i = 0b001;
+    top->ALUControl_i = 0b0001; // SUB
     top->SrcA_i = 20;
     top->SrcB_i = 5;
 
@@ -50,7 +50,7 @@ TEST_F(TB_NAME, SubWorksTest)
 // AND
 TEST_F(TB_NAME, AndWorksTest)
 {
-    top->ALUControl_i = 0b010;
+    top->ALUControl_i = 0b0010; // AND
     top->SrcA_i = 0b1100;
     top->SrcB_i = 0b1010;
 
@@ -62,7 +62,7 @@ TEST_F(TB_NAME, AndWorksTest)
 // OR
 TEST_F(TB_NAME, OrWorksTest)
 {
-    top->ALUControl_i = 0b011;
+    top->ALUControl_i = 0b0011; // OR
     top->SrcA_i = 0b1100;
     top->SrcB_i = 0b0110;
 
@@ -74,26 +74,27 @@ TEST_F(TB_NAME, OrWorksTest)
 // SLT (a < b)
 TEST_F(TB_NAME, SltWorksTest)
 {
-    top->ALUControl_i = 0b101;
+    top->ALUControl_i = 0b1000; // SLT
     top->SrcA_i = 5;
     top->SrcB_i = 9;
 
     top->eval();
 
-    EXPECT_EQ(top->Zero_o, 1);
+    EXPECT_EQ(top->ALUResult_o, 1);
+    EXPECT_EQ(top->Zero_o, 0);
 }
 
 // undefined opcode
 TEST_F(TB_NAME, DefaultCaseTest)
 {
-    top->ALUControl_i = 0b111;
+    top->ALUControl_i = 0b1100; // unused -> default
     top->SrcA_i = 1234;
     top->SrcB_i = 5678;
 
     top->eval();
 
     EXPECT_EQ(top->ALUResult_o, 0);
-    EXPECT_EQ(top->Zero_o, 0);
+    EXPECT_EQ(top->Zero_o, 1);
 }
 
 int main(int argc, char **argv)
