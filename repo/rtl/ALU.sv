@@ -7,6 +7,11 @@ module ALU #(
     output  logic [DATA_WIDTH-1:0]  ALUResult_o,
     output  logic                   Zero_o
 );
+    //64 bit extended operands to have full multiplication precision
+    logic signed [2*DATA_WIDTH-1:0] sign_ext_A;
+    logic signed [2*DATA_WIDTH-1:0] sign_ext_B;
+    logic signed [2*DATA_WIDTH-1:0] zero_ext_A;
+    logic signed [2*DATA_WIDTH-1:0] zero_ext_B;
 
     logic signed [2*DATA_WIDTH-1:0] signed_product;
     logic [2*DATA_WIDTH-1:0] unsigned_product;
@@ -14,15 +19,18 @@ module ALU #(
 
 
     always_comb begin
-        ALUResult_o = {DATA_WIDTH{1'b0}};
-        
-        signed_product = '0;
-        unsigned_product = '0;
-        signed_unsigned_product = '0;
+        //prepare sign extended operands
+        sign_ext_A = {{DATA_WIDTH{SrcA_i[DATA_WIDTH-1]}}, SrcA_i}; // Sign Extend
+        sign_ext_B = {{DATA_WIDTH{SrcB_i[DATA_WIDTH-1]}}, SrcB_i}; 
+        zero_ext_A = {{DATA_WIDTH{1'b0}}, SrcA_i};                 // Zero Extend
+        zero_ext_B = {{DATA_WIDTH{1'b0}}, SrcB_i};
 
-        signed_product = $signed(SrcA_i) * $signed(SrcB_i);
-        unsigned_product = SrcA_i * SrcB_i;
-        signed_unsigned_product = $signed(SrcA_i) * $unsigned(SrcB_i);
+        //64 bit multiplcation
+        signed_product          = sign_ext_A * sign_ext_B;
+        unsigned_product        = zero_ext_A * zero_ext_B;
+        signed_unsigned_product = sign_ext_A * zero_ext_B; // Signed * Unsigned
+
+        ALUResult_o = {DATA_WIDTH{1'b0}};
         
         case (ALUControl_i)
             4'b0001: ALUResult_o = SrcA_i - SrcB_i; // SUB
