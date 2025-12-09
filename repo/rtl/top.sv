@@ -105,7 +105,7 @@ module top #(
     //Control block inputs 
     logic [6:0]                     op;
     logic [2:0]                     funct3;
-    logic                           funct7;
+    logic [6:0]                     funct7;
     
     // Pipeline register helpers
     // Need to pass funct3 to execute stage for branch handling
@@ -165,7 +165,7 @@ module top #(
     // Decode stage
     assign op = InstrD[6:0];
     assign funct3 = InstrD[14:12];
-    assign funct7 = InstrD[30];
+    assign funct7 = InstrD[31:25];
     assign Rs1D = InstrD[19:15];
     assign Rs2D = InstrD[24:20];
     assign RdD  = InstrD[11:7];
@@ -299,7 +299,8 @@ module top #(
     branch_unit branch_unit (
         .funct3_i(funct3E),
         .Zero_i(ZeroE),
-        .ALUResult_i(ALUResultE),
+        .SrcA_i(SrcAE_final),
+        .SrcB_i(SrcBE),
         .BranchTaken_o(Branch_Taken)
     );
 

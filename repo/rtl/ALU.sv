@@ -8,8 +8,21 @@ module ALU #(
     output  logic                   Zero_o
 );
 
+    logic signed [2*DATA_WIDTH-1:0] signed_product;
+    logic [2*DATA_WIDTH-1:0] unsigned_product;
+    logic signed [2*DATA_WIDTH-1:0] signed_unsigned_product;
+
+
     always_comb begin
         ALUResult_o = {DATA_WIDTH{1'b0}};
+        
+        signed_product = '0;
+        unsigned_product = '0;
+        signed_unsigned_product = '0;
+
+        signed_product = $signed(SrcA_i) * $signed(SrcB_i);
+        unsigned_product = SrcA_i * SrcB_i;
+        signed_unsigned_product = $signed(SrcA_i) * $unsigned(SrcB_i);
         
         case (ALUControl_i)
             4'b0001: ALUResult_o = SrcA_i - SrcB_i; // SUB
@@ -35,6 +48,11 @@ module ALU #(
                 else 
                     ALUResult_o = {DATA_WIDTH{1'b0}};
             end
+            
+            4'b1010: ALUResult_o = unsigned_product[DATA_WIDTH-1:0]; // MUL
+            4'b1011: ALUResult_o = signed_product[2*DATA_WIDTH-1:DATA_WIDTH]; // MULH
+            4'b1100: ALUResult_o = signed_unsigned_product[2*DATA_WIDTH-1:DATA_WIDTH]; // MULHSU
+            4'b1101: ALUResult_o = unsigned_product[2*DATA_WIDTH-1:DATA_WIDTH]; // MULHU
             
             4'b1111: ALUResult_o = SrcB_i; // LUI (Pass B)
             

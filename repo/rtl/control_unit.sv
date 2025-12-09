@@ -1,7 +1,7 @@
 module control_unit(
     input   logic   [6:0]   op_i,
     input   logic   [2:0]   funct3_i,
-    input   logic           funct7_i,
+    input   logic   [6:0]   funct7_i,
     output  logic           RegWrite_o,
     output  logic           MemWrite_o,
     output  logic   [3:0]   ALUControl_o, // 4 bit for full ISA
@@ -109,23 +109,52 @@ module control_unit(
         endcase
     end
 
+    // ALU Decoder
     always_comb begin
-        case(ALUOp)
+        case (ALUOp)
             2'b00: ALUControl_o = 4'b0000; // ADD (LW/SW/JAL/AUIPC)
-            2'b01: ALUControl_o = 4'b0001; // SUB (BEQ)
+            2'b01: ALUControl_o = 4'b0001; // SUB (branches)
             2'b11: ALUControl_o = 4'b1111; // LUI
-            
-            // R-Type or I-Type
+
+            // R-Type / I-Type / M-Extension
             2'b10: begin
-                case (funct3_i)
-                    3'b000: ALUControl_o = (funct7_i && op_i[5]) ? 4'b0001 : 4'b0000; // SUB/ADD
-                    3'b001: ALUControl_o = 4'b0101; // SLL
-                    3'b010: ALUControl_o = 4'b1000; // SLT
-                    3'b011: ALUControl_o = 4'b1001; // SLTU
-                    3'b100: ALUControl_o = 4'b0100; // XOR
-                    3'b101: ALUControl_o = (funct7_i) ? 4'b0111 : 4'b0110; // SRA / SRL
-                    3'b110: ALUControl_o = 4'b0011; // OR
-                    3'b111: ALUControl_o = 4'b0010; // AND
+                unique case (funct3_i)
+                    3'b000: begin
+                        if (op_i == 7'b0110011 && funct7_i == 7'b0000001)
+                            ALUControl_o = 4'b1010;   // MUL
+                        else if (op_i == 7'b0110011 && funct7_i == 7'b0100000)
+                            ALUControl_o = 4'b0001;   // SUB
+                        else
+                            ALUControl_o = 4'b0000;   // ADD / ADDI
+                    end
+                    3'b001: begin
+                        if (op_i == 7'b0110011 && funct7_i == 7'b0000001)
+                            ALUControl_o = 4'b1011;   // MULH 
+                        else
+                            ALUControl_o = 4'b0101;   // SLL / SLLI
+                    end
+                    3'b010: begin
+                        if (op_i == 7'b0110011 && funct7_i == 7'b0000001)
+                            ALUControl_o = 4'b1100;   // MULHSU 
+                        else
+                            ALUControl_o = 4'b1000;   // SLT / SLTI
+                    end
+                    3'b011: begin
+                        if (op_i == 7'b0110011 && funct7_i == 7'b0000001)
+                            ALUControl_o = 4'b1101;   // MULHU 
+                        else
+                            ALUControl_o = 4'b1001;   // SLTU / SLTIU
+                    end
+                    3'b100: ALUControl_o = 4'b0100;   // XOR
+                    3'b101: begin
+                        if (funct7_i == 7'b0100000)
+                            ALUControl_o = 4'b0111;   // SRA / SRAI
+                        else
+                            ALUControl_o = 4'b0110;   // SRL / SRLI
+                    end
+                    3'b110: ALUControl_o = 4'b0011;   // OR
+                    3'b111: ALUControl_o = 4'b0010;   // AND
+
                     default: ALUControl_o = 4'b0000;
                 endcase
             end

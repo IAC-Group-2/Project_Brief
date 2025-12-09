@@ -152,6 +152,14 @@ TEST_F(CpuTestbench, TestBranchInstructions)
     EXPECT_EQ(top_->a0, 100);
 }
 
+TEST_F(CpuTestbench, TestMultiplyInstructions)
+{
+    setupTest("13_mul");
+    initSimulation();
+    runSimulation(5000);
+
+    EXPECT_EQ(top_->a0, 42);   // or checksum from your asm
+}
 
 int main(int argc, char **argv)
 {
