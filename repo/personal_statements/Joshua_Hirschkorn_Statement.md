@@ -480,7 +480,6 @@ Commits:
 4. [Adding RD outputs for pipelining](https://github.com/IAC-Group-2/Project_Brief/commit/9516af7cd4802e1755be34f28b7347329679b99d)
 5. [Finalised pipeline level top.sv with comments on needed components](https://github.com/IAC-Group-2/Project_Brief/commit/8dacf4162a2540413f5d7b8a625ad324ac0ce4f3)
 6. +lots more bug fixes and testing logic
-7. 
   
 #### Pipeline Stage Signal Flow
 
@@ -960,7 +959,6 @@ Commits:
 8. [Mux reg test bench](https://github.com/IAC-Group-2/Project_Brief/commit/4608020e19b2c75cdb112019389e938e4193f7ab)
 9. [Cache test bench](https://github.com/IAC-Group-2/Project_Brief/commit/ac1aa166744916d2823846e828435205f3b1bacc)
 10. [Changed pipeline register test benches for new cache](https://github.com/IAC-Group-2/Project_Brief/commit/e011c75a590c770076962beb86ed496cbd3e4b88)
-11. []
 
 #### Hazard Unit Testbench (`hazard_unit_tb.cpp`)
 
