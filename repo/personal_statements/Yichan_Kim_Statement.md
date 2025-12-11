@@ -1,4 +1,8 @@
-# Personal Statement: RISC-V Processor Implementation
+# **RISC-V RV32I Processor Coursework**
+
+#### *Yichan Kim | CID: 02327531 | GitHub: YichanKim
+
+# Personal Statement
 
 This document explains what I did for the RISC-V RV32I processor project. I’ll go through the design choices I made, the problems I ran into, and what I learned from building a pipelined processor with cache integration. Our team managed to hit all the stretch goals.
 
@@ -477,6 +481,11 @@ I developed testbenches for all pipeline registers using the GTest framework and
 - Updated existing testbenches to match new variable naming conventions.
 
 ---
+## Additional Note
+
+As a note: Josh and I worked closely together throughout this project. We were both able to contribute immensely, and many of our tasks would not have been possible without each other’s support. Our collaboration was essential to completing the work.
+
+---
 
 ## Reflection and Learnings
 
@@ -518,7 +527,7 @@ Building this processor made me realize how complicated computer architecture re
 
 ### Deepest Understanding
 
-The thing that deepened my understanding the most was seeing how **pipeline stages work together as a system**. At first, I thought of each stage in isolation, but through implementing the hazard unit and integrating cache stalling, I learnt how stages have to coordinate to maintain correctness. The balance between forwarding and stalling was interesting.
+The thing that deepened my understanding the most was seeing how pipeline stages work together as a system. At first, I thought of each stage in isolation, but through implementing the hazard unit and integrating cache stalling, I learnt how stages have to coordinate to maintain correctness. The balance between forwarding and stalling was interesting.
 
 This experience made me more aware of system level considerations in hardware design.
 
