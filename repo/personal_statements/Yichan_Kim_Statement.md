@@ -1,6 +1,6 @@
 # **RISC-V RV32I Processor Coursework**
 
-#### *Yichan Kim | CID: 02327531 | GitHub: YichanKim
+#### Yichan Kim | CID: 02327531 | GitHub: YichanKim
 
 # Personal Statement
 
