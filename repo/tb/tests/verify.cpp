@@ -163,6 +163,15 @@ TEST_F(CpuTestbench, TestMulstiplyInstructions)
     EXPECT_EQ(top_->a0, 1073741770);   
 }
 
+TEST_F(CpuTestbench, TestBranchPrediction)
+{
+    setupTest("14_branch_prediction");
+    initSimulation();
+    runSimulation(1000);
+    EXPECT_EQ(top_->a0, 20);
+}
+
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
