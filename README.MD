@@ -47,17 +47,10 @@ chmod +x runtests.sh
 
 | Team Member       | GitHub        | CID      | Email           | Personal Statement |
 | ----------------- | ------------- | -------- | --------------- | ------------------ |
-<<<<<<< HEAD
 | Joshua Hirschkorn | vortexisalpha | 02378306 | jh1234@ic.ac.uk |         [Joshua's Personal Statement](./repo/personal_statements/Joshua_Hirschkorn_Statement.md)           |
 | Yichan Kim           | YichanKim  | 02327531 | yk1122@ic.ac.uk |         [Yichan's Personal Statement](./repo/personal_statements/Yichan_Kim_Statement.md)           |
 | Anthony Bartlett          |  an-thony350             |  02556059        |    ab4324@ic.ac.uk     |     [Anthony's Personal Statement](./repo/personal_statements/Anthony_Bartlett_Statement.md)  |
 | Carys Leung            | zenbean       | 02565398 | ccl224@ic.ac.uk |  [Carys' Personal Statement](./repo/personal_statements/Carys_Leung_Statement.md)        |
-=======
-| Joshua Hirschkorn | vortexisalpha | 02378306 | jh1234@ic.ac.uk | [Joshua's Statment](./repo/personal_statements/Joshua_Hirschkorn_Statement.md)|
-| Yichan            | an-thony350   | 02556059 | ab4324@ic.ac.uk |[Yichan's Statment](./repo/personal_statements/Yichan_Kim_Statement.md)|
-| Anthony           |  an-thony350|  02556059        |     ab4324@ic.ac.uk            |                    |
-| Carys             | zenbean       | 02565398 | ccl224@ic.ac.uk |                    |
->>>>>>> 60b466a (changes to readme and josh ps)
 
 ### High-Level Contribution Summary
 
@@ -251,13 +244,11 @@ Finally, we ensured that control signals remain valid throughout execution by pr
 
 ## Cache Implementation
 
+[Cache tag here](https://github.com/IAC-Group-2/Project_Brief/releases/tag/Cache)
+
 The cache implementation represented a significant extension beyond the core project requirements, with Joshua and Yichan collaborating extensively through video calls to design and implement a two way set associative writeback cache that integrates seamlessly with the pipelined processor.
 
-<<<<<<< HEAD
 ![pipeline and cache](./images/full_pipeline_cache.png)
-=======
-![](./repo/personal_statements/personal_statement_assets/Cache%20+%20Pipeline_Diagram%20(1).drawio.png)
->>>>>>> 60b466a (changes to readme and josh ps)
 
 ### Cache Architecture
 
@@ -383,6 +374,8 @@ The `funct3` signal must propagate through the pipeline to the memory stage so t
 
 
 ## Full Instruction Set
+
+[Full ISA tag release here](https://github.com/IAC-Group-2/Project_Brief/releases/tag/Full-RISCV-updated)
 
 Anthony and Carys worked together to expand the base instruction set by taking roughly half of the remaining instructions each to implement. We integrated the full base instruction set into the pipeline design, which introduced the challenge of understanding the other pair's work to modify their designs accordingly. However, this proved beneficial as it allowed for a comprehensive peer review of the entire architecture.
 
