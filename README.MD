@@ -59,7 +59,7 @@ chmod +x runtests.sh
 | Single Cycle Foundation (Lab 4) | X          | X          | X         | X           |
 | Pipelined Design                | X          | X          |           |             |
 | Cache Implementation            | X          | X          |           |             |
-| Control Unit & ALU Expansion    |            |            | X         | X           |
+| Full ISA Implementation         |            |            | X         | X           |
 | Testing Framework               | X          | X          |           |             |
 | Top-Level Integration           | X          | X          |           |             |
 | Multiplication Instructons      |            |            |           | X           |
