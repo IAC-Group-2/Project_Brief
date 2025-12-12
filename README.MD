@@ -370,6 +370,17 @@ The `funct3` signal must propagate through the pipeline to the memory stage so t
 
 Anthony and Carys worked together to expand the base instruction set by taking roughly half of the remaining instructions each to implement. We integrated the full base instruction set into the pipeline design, which introduced the challenge of understanding the other pair's work to modify their designs accordingly. However, this proved beneficial as it allowed for a comprehensive peer review of the entire architecture.
 
+The remaining instructions that were implemented:
+|Instruction Type|Instructions|Anthony|Carys|
+|----------------|------------|-------|-----|
+|R-type|`xor` `srl` `sra` `sltu`||x|
+|I-type (Arithmetic)|`xori` `ori` `andi` `srli` `srai` `sltiu`|x||
+|I-type (Load)|`lb` `lh` `lhu`|x||
+|S-type|`sh`||x|
+|B-type|`blt` `bge` `bltu` `bgeu`|x||
+|U-type|`auipc`||x|
+
+
 Schematic of full instruction set with pipeline, with the pipeline registers highlighted blue and key changes to components in orange:
 
 ![schematic of full instruction set with pipeline](images/full_instruction_set_schema.png)
