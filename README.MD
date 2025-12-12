@@ -48,7 +48,7 @@ chmod +x runtests.sh
 | Joshua Hirschkorn | vortexisalpha | 02378306 | jh1234@ic.ac.uk |                    |
 | Yichan            | an-thony350   | 02556059 | ab4324@ic.ac.uk |                    |
 | Anthony           |               |          |                 |                    |
-| Carys             |               |          |                 |                    |
+| Carys             | zenbean       | 02565398 | ccl224@ic.ac.uk |                    |
 
 ### High-Level Contribution Summary
 
@@ -73,10 +73,10 @@ Joshua worked on testing all components in the CPU. This included debugging othe
 
 Anthony worked on the F1 lights implementation, and testing instructions + debugging
 
-Carys.....
+Carys designed the instruction memory, control unit, and sign extension components. Initially, the instruction memory was word-addressed, but in collaboration with Yichan, it was developed into a byte-addressed system to ensure precise instruction fetching. Additionally, a future-proof control unit was designed, allowing for easy scalability when expanding the design in later stages.
 
 A more detailed readme of the single_cycle can be found here:
-https://github.com/IAC-Group-2/Project_Brief/tree/single_cycle
+[View single cycle branch](https://github.com/IAC-Group-2/Project_Brief/tree/single_cycle)
 
 ## Pipelined Processor Design
 
