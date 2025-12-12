@@ -619,5 +619,30 @@ EXPECT_EQ(top_->a0, 15363);
 The PDF test was particularly valuable for validating the complete system including cache behaviour, as it performs extensive memory accesses while computing a probability distribution histogram that produces a deterministic final result.
 
 ### F1 Test algorithm
+(copied from single_cycle readme)
+As an additional application-level demonstration of the processor, an **F1-style start lights finite state machine (FSM)** was implemented entirely in **RISC-V assembly**. This program is designed to run on the single-cycle core and interface with **Vbuddy** for visual output.
 
-CARYS AND ANTHONY PLEASE DO
+#### Behaviour Overview
+The FSM replicates the behaviour of real Formula 1 start lights:
+- Eight red lights illuminate **sequentially and deterministically**
+- Once all lights are on, the system waits for a **pseudo-random delay**
+- All lights then turn off simultaneously before the sequence restarts
+
+
+#### Random Delay Generation
+A **7-bit Linear Feedback Shift Register (LFSR)** is used to generate pseudo-random values. These values are scaled using nested delay loops to produce a visually noticeable random delay in the range of approximately **0.5 to 3 seconds**, ensuring variability while remaining realistic.
+
+The LFSR uses the polynomial:
+
+x<sup>7</sup> + x<sup>6</sup> + 1
+
+and is updated once per full light sequence, avoiding disruption to the deterministic LED count-up phase.
+
+#### Timing and Scaling
+All timing is implemented using software delay loops, as expected for a single-cycle processor without hardware timers. Delay constants were tuned empirically to achieve:
+- Clearly visible light increments
+- A noticeable and variable lights-out delay
+- Stable behaviour under simulation and Vbuddy output
+
+#### Testing and Visualisation
+The FSM output is mapped to Vbuddy LEDs, allowing the light sequence and randomised lights-out timing to be observed directly. The testbench runs continuously, enabling repeated observation of different random delays without manual intervention.
