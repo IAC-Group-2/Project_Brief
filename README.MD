@@ -18,6 +18,8 @@
 
 Our team successfully implemented a fully functional RISC-V RV32I pipelined processor with integrated two-way set-associative cache memory, achieving all stretch goals outlined in the project specification. The processor supports the complete RV32I instruction set including arithmetic, logical, memory, branch, and jump operations, with hazard detection and forwarding logic to maintain correct execution across the pipeline stages.
 
+![Complete schematics](./images/complete_schema.png)
+
 To run all tests:
   
 ```bash
@@ -242,7 +244,8 @@ Finally, we ensured that control signals remain valid throughout execution by pr
 
 The cache implementation represented a significant extension beyond the core project requirements, with Joshua and Yichan collaborating extensively through video calls to design and implement a two way set associative writeback cache that integrates seamlessly with the pipelined processor.
 
-INSERT PHOTO OF CACHE FULL CPU DIAGRAM
+![pipeline and cache](./images/full_pipeline_cache.png)
+
 ### Cache Architecture
 
 The cache stores 2 kilobytes of data across 256 sets, with each set containing two ways (cache lines). Each way stores a 32-bit data word alongside valid, dirty, and tag bits, with an LRU (Least Recently Used) bit per set indicating which way to replace on a cache miss:
