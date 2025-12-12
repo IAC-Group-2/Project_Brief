@@ -225,11 +225,11 @@ endcase
 
 A secondary decoder translates the `ALUOp` signal and `funct3`/`funct7` fields into the specific 4 bit ALU control signal. This handles the distinction between operations like ADD and SUB (which share the same `funct3` but differ in `funct7`) and manages the various I-Type immediate arithmetic operations.
 
-Adapting the Control Unit to accommodate the 5 stage pipeline required decoupling the decision making processes. In a single cycle processor, all control signals are generated and executed in a single clock cycle. Whereas in a pipelined design, signals generated in the Decode stage must propagate through pipeline registers to be used in later stages (Execute, Memory, and Writeback). By decoupling these decisions, the control unit avoids stalling for the ALU; instead, it flags the instruction and allows the pipeline logic to resolve the action once the necessary data becomes available.
+Adapting the control unit to accommodate the 5 stage pipeline required decoupling the decision making processes. In a single cycle processor, all control signals are generated and executed in a single clock cycle. Whereas in a pipelined design, signals generated in the decode stage must propagate through pipeline registers to be used in later stages (execute, memory, and writeback). By decoupling these decisions, the control unit avoids stalling for the ALU; instead, it flags the instruction and allows the pipeline logic to resolve the action once the necessary data becomes available.
 
 In a pipelined architecture, the control unit in the decode stage cannot know the outcome of a branch comparison, as that evaluation happens in the execute stage. To resolve this, we separated the logic. The decoder flags a branch instruction, and a separate logic block determines the final `PCSrc_o` (next PC Source) by combining this branch signal with the `Zero_i` flag which is fed back from the execute stage.
 
-Implementing `JALR` in a pipeline was challenging because its target address is calculated by the ALU (Register + Immediate), unlike `JAL` or branch instructions which use the PC adder. To resolve this, we introduced a `jalr` flag in the control unit. When high, this flag forces the PC multiplexer to ignore the PC adder and instead select the `ALUResult` as the next PC address, ensuring that the jump target is correctly sourced from the Execute stage.
+Implementing `JALR` in a pipeline was challenging because its target address is calculated by the ALU (register + immediate), unlike `JAL` or branch instructions which use the PC adder. To resolve this, we introduced a `jalr` flag in the control unit. When high, this flag forces the PC multiplexer to ignore the PC adder and instead select the `ALUResult` as the next PC address, ensuring that the jump target is correctly sourced from the Execute stage.
 
 To support `LUI` within the pipeline without adding another stage or component, we modified the ALU control logic by assigning it a specific ALU opcode (2'b11). This allows us to use the existing execute stage datapath, the immediate value generated in the decode stage is passed to the ALU, which simply passes it through (SrcB) to be written back, removing the need for specialized hardware.
 
@@ -414,8 +414,38 @@ As mentioned in a [previous section](#branch-unit) within this report, to suppor
 ANTHONY PLEASE DO
 
 ### Branch Prediction
+To further increase the efficiency of our pipelined processor with two-way set-associative cache memory, we implemented a dynamic branch predictor to reduce the wasted cycles caused by control hazards. This was achieved by designing a 2 bit saturating counter with a Pattern History Table (PHT) and a Branch Target Buffer (BTB). This logic was implemented as a separate component, `branch_predict.sv`, which operates in parallel with the fetch stage.
 
-CARYS PLEASE DO
+The 2-bit saturating counter that acts as a state machine with four states: strongly not taken (`00`), weakly not taken (`01`), weakly taken (`10`), and strongly taken (`11`). This provides stability by requiring two consecutive mispredictions to change the prediction direction, this prevents loop exits from flipping the prediction immediately.
+
+To make a prediction during the fetch stage, the branch predictor uses the program counter (`PCF`) as an index into the two tables simultaneously: 
+
+- Pattern History Table (which stores the 2-bit state)
+- Branch Target Buffer (which stores the target address). 
+
+The BTB output is only used if the PHT predicts "Taken". In this case, the PC multiplexer selects the address from the BTB. If the PHT predicts "Not Taken," the BTB output is ignored, and the processor fetches `PC+4` as usual.
+
+In the execution stage, the actual branch condition and target are resolved by the branch unit and ALU. This outcome is fed back to the fetch stage to update the PHT state. If the branch was actually taken, the correct target address (`PCTargetE`) is written into the BTB so it is available for the next fetch cycle. However, if a misprediction occurs, the hazard unit flushes the pipeline, corrects the PC, and restarts the fetch cycle.
+
+```systemverilog
+// branch_predict.sv: 2 bit saturating counter
+always_ff @(posedge clk_i) begin
+    if (BranchE_i) begin
+        if (TakenE_i) begin
+            // Increment state towards Strongly Taken (11)
+            if (state_table[indexE] != 2'b11) 
+                state_table[indexE] <= state_table[indexE] + 1;
+            // Update BTB with correct target
+            target_table[indexE] <= PCTargetE_i;
+        end else begin
+            // Decrement state towards Strongly Not Taken (00)
+            if (state_table[indexE] != 2'b00) 
+                state_table[indexE] <= state_table[indexE] - 1;
+        end
+    end
+end
+```
+
 ## Testing and Verification
 
 Comprehensive testing formed a crucial part of our development methodology, with Joshua and Yichan creating extensive component testbenches using Google Test and Verilator while the full system was verified using the provided assembly test programs.
