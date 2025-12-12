@@ -44,8 +44,9 @@ Single cycle passes all the tests provided:
 ![Testbench tests](images/single_cycle%20test%20pass.png)
 
 ### F1 light
-*insert gif
-*insert video
+![F1 Test](images/f1.gif)
+
+[Link to higher quality video](videos/f1.mp4)
 
 ### PDF - Gaussian
 ![Gaussian test](images/gaussian.gif)
@@ -76,3 +77,34 @@ _loop3:                         # repeat
     RET
 ```
 We can see that the value in register `a0` only updates once every 4 clock cycles. Plotting every single cycle would lead to the graph look stretched out horizontally.
+
+## F1 Start Lights FSM (Assembly-Level Application)
+
+As an additional application-level demonstration of the processor, an **F1-style start lights finite state machine (FSM)** was implemented entirely in **RISC-V assembly**. This program is designed to run on the single-cycle core and interface with **Vbuddy** for visual output.
+
+### Behaviour Overview
+The FSM replicates the behaviour of real Formula 1 start lights:
+- Eight red lights illuminate **sequentially and deterministically**
+- Once all lights are on, the system waits for a **pseudo-random delay**
+- All lights then turn off simultaneously before the sequence restarts
+
+
+### Random Delay Generation
+A **7-bit Linear Feedback Shift Register (LFSR)** is used to generate pseudo-random values. These values are scaled using nested delay loops to produce a visually noticeable random delay in the range of approximately **0.5 to 3 seconds**, ensuring variability while remaining realistic.
+
+The LFSR uses the polynomial:
+
+x<sup>7</sup> + x<sup>6</sup> + 1
+
+and is updated once per full light sequence, avoiding disruption to the deterministic LED count-up phase.
+
+### Timing and Scaling
+All timing is implemented using software delay loops, as expected for a single-cycle processor without hardware timers. Delay constants were tuned empirically to achieve:
+- Clearly visible light increments
+- A noticeable and variable lights-out delay
+- Stable behaviour under simulation and Vbuddy output
+
+### Testing and Visualisation
+The FSM output is mapped to Vbuddy LEDs, allowing the light sequence and randomised lights-out timing to be observed directly. The testbench runs continuously, enabling repeated observation of different random delays without manual intervention.
+
+
