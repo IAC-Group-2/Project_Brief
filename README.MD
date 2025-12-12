@@ -46,7 +46,7 @@ chmod +x runtests.sh
 | Team Member       | GitHub        | CID      | Email           | Personal Statement |
 | ----------------- | ------------- | -------- | --------------- | ------------------ |
 | Joshua Hirschkorn | vortexisalpha | 02378306 | jh1234@ic.ac.uk |                    |
-| Yichan            |               |          |                 |                    |
+| Yichan            | an-thony350   | 02556059 | ab4324@ic.ac.uk |                    |
 | Anthony           |               |          |                 |                    |
 | Carys             |               |          |                 |                    |
 
@@ -71,9 +71,12 @@ Yichan was primarily responsible for the initial ALU implementation and register
 
 Joshua worked on testing all components in the CPU. This included debugging other peoples modules and writing comprehensive test cases in C++. Individual component test benches were created for: ALU, Control Unit, Muxes, Sign extension unit and Instruction memory.
 
-Anthony .... 
+Anthony worked on the F1 lights implementation, and testing instructions + debugging
 
 Carys.....
+
+A more detailed readme of the single_cycle can be found here:
+https://github.com/IAC-Group-2/Project_Brief/tree/single_cycle
 
 ## Pipelined Processor Design
 
